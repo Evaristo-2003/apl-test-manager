@@ -1,0 +1,1094 @@
+[
+    {
+        "label": "All sequence",
+        "action": {
+            "type": "sequence_buttons",
+            "buttons": [
+                "CBHW Version",
+                "CBSW Version",
+                "Thermal Port 0",
+                "cursens_12vtoj6",
+                "cursens_hsbridge",
+                "SATA Set port 1",
+                "Check PCB ID",
+                "cursens_ab3v3",
+                "cursens_ab5v",
+                "cursens_12vtoab",
+                "ADC",
+                "Check ABL",
+                "ABHW Version",
+                "ABSW Version",
+                "AB CPU TEMP",
+                "Thermal Port 4",
+                "Kernel Version",
+                "CPU info",
+                "DDR Set Test",
+                "PCIe number of port",
+                "PCIe Iperf Test",
+                "USB3_3 number of port",
+                "USB3_3 Iperf Test",
+                "USB3->USB2",
+                "USB2 number of port",
+                "USB2 Iperf Test",
+                "USB3_2",
+                "SATA Get port 1",
+                "SATA Set Port 2",
+                "EMMC-8bit",
+                "EMMC-4bit",
+                "SDIO",
+                "UART",
+                "I2C",
+                "SPI",
+                "I2S",
+                "SMBus",
+                "LPC",
+                "DDR Get Result",
+                "AB Mrcthreshold",
+                "HDMI",
+                "PWM",
+                "SATA Get Port 2",
+                "GPIO",
+                "CSI",
+                "AB CPU Temp",
+                "AB Erase DID",
+                "AB Power Off"
+            ]
+        }
+    },
+    {
+        "label": "CBHW Version",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh cbhw",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "CBSW Version",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh cbapp",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "PCIe Iperf Test",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh pcie client 0 3 4",
+            "target": 2,
+            "expect_result": true,
+            "end_marker": "pcie_RSULT_RETURN"
+        }
+    },
+    {
+        "label": "Thermal Port 0",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh thermal 0",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "cursens_12vtoj6",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh current cursens_12vtoj6",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "cursens_hsbridge",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh current cursens_hsbridge",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "SATA Set port 1",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh sata 1",
+            "target": 1,
+            "expect_result": false
+        }
+    },
+    {
+        "label": "Check PCB ID",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh pcb",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "cursens_ab3v3",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh current cursens_ab3v3",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "cursens_ab5v",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh current cursens_ab5v",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "cursens_12vtoab",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh current cursens_12vtoab",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "ADC",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh adc 0",
+                    "target": 1,
+                    "delay": 1
+                },
+                {
+                    "cmd": "websocket_test.sh adc 1",
+                    "target": 1,
+                    "delay": 0
+                }
+            ]
+        }
+    },
+    {
+        "label": "Check ABL",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh abl",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "ABHW Version",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh abhw",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "ABSW Version",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh abapp",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "AB CPU TEMP",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh  cpu_thermal thermal_zone0",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "Thermal Port 4",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh thermal 4",
+            "target": 1,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "Kernel Version",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh kernel",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "CPU info",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh cpuinfo",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "DDR Set Test",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh ddr 1 80 0",
+            "target": 2,
+            "expect_result": false
+        }
+    },
+    {
+        "label": "PCIe number of port",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh pcie client 0 3 3",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "USB3_3 number of port",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh usb3 client 0 3 0",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "USB3_3 Iperf Test",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh usb3 client 0 3 4",
+            "target": 2,
+            "expect_result": true,
+            "end_marker": "usb3_RSULT_RETURN"
+        }
+    },
+    {
+        "label": "USB3->USB2",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh usb3 usb3tousb2 1",
+            "target": 1,
+            "expect_result": false
+        }
+    },
+    {
+        "label": "USB2 number of port",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh usb2 client 0 3 3",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "USB2 Iperf Test",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh usb2 client 0 3 4",
+            "target": 2,
+            "expect_result": true,
+            "end_marker": "usb2_RSULT_RETURN"
+        }
+    },
+    {
+        "label": "USB3_2",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh usb3 usb3tousb2 0",
+            "target": 2,
+            "expect_result": false
+        }
+    },
+    {
+        "label": "SATA Get port 1",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh sata 1",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "SATA Set Port 2",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh sata 2",
+            "target": 1,
+            "expect_result": false
+        }
+    },
+    {
+        "label": "EMMC-8bit",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh emmc8_info",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "EMMC-4bit",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh emmc4",
+            "target": 2,
+            "expect_result": true,
+            "end_marker": "root@harman-si-intel-plk:~#"
+        }
+    },
+    {
+        "label": "SDIO",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh sdio",
+            "target": 2,
+            "expect_result": true,
+            "end_marker": "root@harman-si-intel-plk:~#"
+        }
+    },
+    {
+        "label": "UART",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh uart cb tx 0 8",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart ab rx 0 8",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart ab tx 0 8",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart cb rx 0 8",
+                    "target": 1,
+                    "end_marker": "are identical"
+                },
+                {
+                    "cmd": "websocket_test.sh uart cb tx 1 8",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart ab rx 1 8",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart ab tx 1 8",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart cb rx 1 8",
+                    "target": 1,
+                    "end_marker": "are identical"
+                },
+                {
+                    "cmd": "websocket_test.sh uart cb tx 3 8",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart ab rx 3 8",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart ab tx 3 8",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh uart cb rx 3 8",
+                    "target": 1,
+                    "end_marker": "are identical"
+                }
+            ]
+        }
+    },
+    {
+        "label": "I2C",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh i2c_temperature 0",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh i2c_temperature 1",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh i2c_temperature 2",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh i2c_temperature 3",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh i2c_temperature 4",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh i2c_temperature 5",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh i2c_temperature 6",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh i2c_temperature 7",
+                    "target": 2,
+                    "delay": 0
+                }
+            ]
+        }
+    },
+    {
+        "label": "SPI",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh spi 1.0",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh spi 1.1",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh spi 3.0",
+                    "target": 2,
+                    "delay": 0.5
+                },
+                {
+                    "cmd": "websocket_test.sh spi 3.1",
+                    "target": 2,
+                    "delay": 0.5
+                }
+            ]
+        }
+    },
+    {
+        "label": "I2S",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh i2s 0 loopback",
+                    "target": 1,
+                    "delay": 1
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 0 1 1",
+                    "target": 2,
+                    "end_marker": "root@harman-si-intel-plk:~#"
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 1 loopback",
+                    "target": 1,
+                    "delay": 1
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 1 1 1",
+                    "target": 2,
+                    "end_marker": "root@harman-si-intel-plk:~#"
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 2 loopback",
+                    "target": 1,
+                    "delay": 1
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 2 1 1",
+                    "target": 2,
+                    "end_marker": "root@harman-si-intel-plk:~#"
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 3 loopback",
+                    "target": 1,
+                    "delay": 1
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 3 1 1",
+                    "target": 2,
+                    "end_marker": "root@harman-si-intel-plk:~#"
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 4 loopback",
+                    "target": 1,
+                    "delay": 1
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 4 1 1",
+                    "target": 2,
+                    "end_marker": "root@harman-si-intel-plk:~#"
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 5 loopback",
+                    "target": 1,
+                    "delay": 1
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 5 1 1",
+                    "target": 2,
+                    "end_marker": "root@harman-si-intel-plk:~#"
+                },
+                {
+                    "cmd": "websocket_test.sh i2s 5 stop",
+                    "target": 1,
+                    "delay": 1
+                }
+            ]
+        }
+    },
+    {
+        "label": "SMBus",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh smbus 0xD",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "LPC",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh lpc",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "DDR Get Result",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh ddr 1 80 1",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "AB Mrcthreshold",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh mrcthreshold",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "HDMI",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh hdmi 3840x2160 colorbar",
+            "target": 2,
+            "expect_result": false,
+            "end_marker": "root@harman-si-intel-plk:~#"
+        }
+    },
+    {
+        "label": "PWM",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh pwm start",
+                    "target": 2,
+                    "delay": 1
+                },
+                {
+                    "cmd": "websocket_test.sh pwm 0",
+                    "target": 2,
+                    "delay": 1.0
+                },
+                {
+                    "cmd": "websocket_test.sh pwm 1",
+                    "target": 2,
+                    "delay": 1.0
+                },
+                {
+                    "cmd": "websocket_test.sh pwm 2",
+                    "target": 2,
+                    "delay": 1.0
+                },
+                {
+                    "cmd": "websocket_test.sh pwm 3",
+                    "target": 2,
+                    "delay": 1.0
+                },
+                {
+                    "cmd": "websocket_test.sh pwm stop",
+                    "target": 2,
+                    "delay": 0
+                }
+            ]
+        }
+    },
+    {
+        "label": "SATA Get Port 2",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh sata 2",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "GPIO",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh gpio init ab",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init cb",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 1 out",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 1 high",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 1 in",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP1_CB_ORDER HIGH_0-15&'",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 1 dump",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 1 out",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 1 low",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 1 in",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP1_CB_ORDER LOW_0-15&'",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 1 dump",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init ab",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init cb",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 1 out",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 1 high",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 1 in",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP1_AB_ORDER HIGH_0-15&'",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 1 dump",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 1 out",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 1 low",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 1 in",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP1_AB_ORDER LOW_0-15&'",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 1 dump",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init ab",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init cb",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 2 out",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 2 high",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 2 in",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP2_CB_ORDER HIGH_16-31&'",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 2 dump",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 2 out",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 2 low",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 2 in",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP2_CB_ORDER LOW_16-31&'",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 2 dump",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init ab",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init cb",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 2 out",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 2 high",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 2 in",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP2_AB_ORDER HIGH_16-31&'",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 2 dump",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 2 out",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 2 low",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 2 in",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP2_AB_ORDER LOW_16-31&'",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 2 dump",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init ab",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init cb",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 3 out",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 3 high",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 3 in",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP3_CB_ORDER HIGH_32-41&'",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 3 dump",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 3 out",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 3 low",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 3 in",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP3_CB_ORDER LOW_32-41&'",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 3 dump",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init ab",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio init cb",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 3 out",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 3 high",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 3 in",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP3_AB_ORDER HIGH_32-41&'",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 3 dump",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 3 out",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 ab 3 low",
+                    "target": 2,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 3 in",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "echo '*GROUP3_AB_ORDER LOW_32-41&'",
+                    "target": 1,
+                    "delay": 0.7
+                },
+                {
+                    "cmd": "websocket_test.sh gpio 0 cb 3 dump",
+                    "target": 1,
+                    "delay": 0.7
+                }
+            ]
+        }
+    },
+    {
+        "label": "CSI",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh csi 1",
+                    "target": 2,
+                    "delay": 5
+                },
+                {
+                    "cmd": "websocket_test.sh csi 2",
+                    "target": 2,
+                    "delay": 0,
+                    "end_marker": "root@harman-si-intel-plk:~#"
+                }
+            ]
+        }
+    },
+    {
+        "label": "AB CPU Temp",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh  cpu_thermal thermal_zone0",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "AB Erase DID",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh erasedid",
+            "target": 2,
+            "expect_result": true,
+            "end_marker": "root@harman-si-intel-plk:~#"
+        }
+    },
+    {
+        "label": "AB Power Off",
+        "action": {
+            "type": "sequence",
+            "steps": [
+                {
+                    "cmd": "websocket_test.sh powerswitch 0",
+                    "target": 2,
+                    "delay": 2
+                },
+                {
+                    "cmd": "websocket_test.sh powerswitch 0",
+                    "target": 1,
+                    "delay": 0
+                }
+            ]
+        }
+    }
+]
