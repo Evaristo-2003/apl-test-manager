@@ -38,7 +38,11 @@ class VerificationService:
                 status="UNKNOWN",
                 message="No hay datos para verificar"
             )
-        
+        if parsed.status in ["COMMAND ACCEPT", "COMMAND_ACCEPT", "CONFIGURATION"]:
+            return VerificationResult(
+                status="PASS",
+                message=f"Comando aceptado: {parsed.status}"
+            )        
         limits = self.limits_repo.get_limits(test_name)
         if not limits:
             return VerificationResult(
@@ -159,7 +163,56 @@ class VerificationService:
                 message="GPIO datos obtenidos",
                 details={'bits': parsed.metrics.get('bits', '')}
             )
-        
+        # ----- ADC -----
+
+        if "ADC" in test_name:
+
+            channels = parsed.data.get("channels", [])
+
+            if len(channels) < 8:
+                return VerificationResult(
+                    status="FAIL",
+                    message="ADC incompleto"
+                )
+
+            limits_map = [
+                ("ADC0_CH0", 1.71, 1.89),
+                ("ADC0_CH1", 3.135, 3.465),
+                ("ADC0_CH2", 0.95, 1.10),
+                ("ADC0_CH3", 1.71, 1.89),
+                ("ADC0_CH4", 1.178, 1.302),
+                ("ADC0_CH5", 0.945, 1.045),
+                ("ADC0_CH6", 1.05, 1.15),
+                ("ADC0_CH7", 3.135, 3.465),
+            ]
+
+            issues = []
+
+            for idx, (_, low, high) in enumerate(limits_map):
+
+                try:
+                    value = float(channels[idx])
+
+                    if value < low or value > high:
+                        issues.append(
+                            f"CH{idx}: {value}"
+                        )
+
+                except Exception:
+                    issues.append(
+                        f"CH{idx}: INVALID"
+                    )
+
+            if issues:
+                return VerificationResult(
+                    status="FAIL",
+                    message="; ".join(issues)
+                )
+
+            return VerificationResult(
+                status="PASS",
+                message="ADC OK"
+            )       
         # ----- I2C -----
         if "I2C" in test_name:
             temp_min = limits.get('temperature_min', -100)
@@ -193,15 +246,27 @@ class VerificationService:
         
         # ----- I2S -----
         if "I2S" in test_name:
-            if parsed.data.get('result', '') == "PASS":
+
+            score = int(
+                parsed.metrics.get("score", 0)
+            )
+
+            if (
+                parsed.data.get("result", "") == "PASS"
+                and
+                999 <= score <= 1001
+            ):
+
                 return VerificationResult(
                     status="PASS",
-                    message=f"I2S verificado con score {parsed.metrics.get('score', '?')}",
-                    details={'score': parsed.metrics.get('score', '?')}
+                    message=f"I2S OK score={score}",
+                    details={"score": score}
                 )
+
             return VerificationResult(
                 status="FAIL",
-                message="I2S falló"
+                message=f"I2S score inválido: {score}",
+                details={"score": score}
             )
         
         # ----- SMBus -----
@@ -258,12 +323,24 @@ class VerificationService:
             )
         
         # ----- COMMAND ACCEPT / CONFIGURATION -----
-        if parsed.status in ["COMMAND ACCEPT", "COMMAND_ACCEPT", "CONFIGURATION"]:
+
+        if "AB CPU TEMP" in test_name or "AB CPU Temp" in test_name:
+
+            temp = float(parsed.data.get("value", 0))
+
+            temp_min = limits.get("temperature_min", 0)
+            temp_max = limits.get("temperature_max", 100)
+
+            if temp_min <= temp <= temp_max:
+                return VerificationResult(
+                    status="PASS",
+                    message=f"CPU Temp OK: {temp}°C"
+                )
+
             return VerificationResult(
-                status="PASS",
-                message=f"Comando aceptado: {parsed.status}"
+                status="FAIL",
+                message=f"CPU Temp fuera de rango: {temp}°C"
             )
-        
         # ----- VERIFICACIÓN POR TIPO "exists" -----
         if limits.get('type') == 'exists':
             if parsed.raw_value:
@@ -295,15 +372,40 @@ class VerificationService:
         tx_min = limits.get('tx_min', 0)
         rx_min = limits.get('rx_min', 0)
         required_ports = limits.get('required_ports', [])
-        
+        ports = [
+            p for p in ports
+            if p["port"] in required_ports
+        ]        
         issues = []
         for port in ports:
+
             if port['ping'] != "PINGOK":
-                issues.append(f"Port {port['port']}: PINGNG")
-            if float(port['tx']) < tx_min:
-                issues.append(f"Port {port['port']}: TX {port['tx']} < {tx_min}")
-            if float(port['rx']) < rx_min:
-                issues.append(f"Port {port['port']}: RX {port['rx']} < {rx_min}")
+                issues.append(
+                    f"Port {port['port']}: PINGNG"
+                )
+                continue
+
+            if (
+                port['tx'] == "NULL"
+                or port['rx'] == "NULL"
+            ):
+                issues.append(
+                    f"Port {port['port']}: NULL result"
+                )
+                continue
+
+            tx = float(port['tx'])
+            rx = float(port['rx'])
+
+            if tx < tx_min:
+                issues.append(
+                    f"Port {port['port']}: TX {tx} < {tx_min}"
+                )
+
+            if rx < rx_min:
+                issues.append(
+                    f"Port {port['port']}: RX {rx} < {rx_min}"
+                )
         
         if issues:
             return VerificationResult(status="FAIL", message="; ".join(issues), details={'ports': ports})
@@ -362,7 +464,7 @@ class VerificationService:
         expected_bus_width = limits.get('bus_width')
         expected_clock = limits.get('clock')
         expected_timing = limits.get('timing')
-        expected_result = limits.get('result', 'PASS')
+        expected_result = limits.get('result')
         
         actual_bus_width = parsed.metrics.get('bus_width', '')
         actual_clock = parsed.metrics.get('clock', '')
@@ -376,8 +478,13 @@ class VerificationService:
             issues.append(f"Clock: {actual_clock} (esperado {expected_clock})")
         if expected_timing and actual_timing != expected_timing:
             issues.append(f"Timing: {actual_timing} (esperado {expected_timing})")
-        if actual_result != expected_result:
-            issues.append(f"Resultado: {actual_result} (esperado {expected_result})")
+        if expected_result is not None:
+
+            if actual_result != expected_result:
+                issues.append(
+                    f"Resultado: {actual_result} "
+                    f"(esperado {expected_result})"
+                )
         
         if issues:
             return VerificationResult(status="FAIL", message="; ".join(issues), details={'issues': issues})

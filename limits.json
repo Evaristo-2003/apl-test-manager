@@ -118,6 +118,31 @@
         "temperature_min": 15,
         "temperature_max": 60
     },
+    "ADC": {
+        "ADC0_CH0_MIN": 1.71,
+        "ADC0_CH0_MAX": 1.89,
+
+        "ADC0_CH1_MIN": 3.135,
+        "ADC0_CH1_MAX": 3.465,
+
+        "ADC0_CH2_MIN": 0.95,
+        "ADC0_CH2_MAX": 1.10,
+
+        "ADC0_CH3_MIN": 1.71,
+        "ADC0_CH3_MAX": 1.89,
+
+        "ADC0_CH4_MIN": 1.178,
+        "ADC0_CH4_MAX": 1.302,
+
+        "ADC0_CH5_MIN": 0.945,
+        "ADC0_CH5_MAX": 1.045,
+
+        "ADC0_CH6_MIN": 1.05,
+        "ADC0_CH6_MAX": 1.15,
+
+        "ADC0_CH7_MIN": 3.135,
+        "ADC0_CH7_MAX": 3.465
+    },
     "SMBus": {
         "result": "PASS"
     },
@@ -129,5 +154,39 @@
     },
     "CSI": {
         "result": "PASS"
+    },
+    "CBHW Version": {
+        "type": "exists"
+    },
+
+    "CBSW Version": {
+        "type": "exists"
+    },
+
+    "ABHW Version": {
+        "type": "exists"
+    },
+
+    "ABSW Version": {
+        "type": "exists"
+    },
+
+    "AB CPU TEMP": {
+        "temperature_min": 20,
+        "temperature_max": 95
+    },
+
+    "AB CPU Temp": {
+        "temperature_min": 20,
+        "temperature_max": 95
+    },
+
+    "AB Erase DID": {
+        "type": "exists"
+    },
+
+    "HDMI": {
+        "result": "PASS"
     }
+
 }

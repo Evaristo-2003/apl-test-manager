@@ -38,6 +38,7 @@ class TestCard(QPushButton):
         self.setStyleSheet(f"""
             QPushButton {{
                 background: {color};
+                color: black;
                 border: 2px solid black;
                 border-radius: 12px;
                 padding: 20px;

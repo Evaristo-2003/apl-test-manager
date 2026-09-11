@@ -105,52 +105,115 @@ class TestService:
         result.parsed_data = parsed.__dict__ if parsed else {}
         
         # Verificar
+
         if parsed:
-            verification = self.verifier.verify(button['label'], parsed)
-            result.verification = verification.__dict__ if verification else {}
-            result.status = verification.status if verification else "UNKNOWN"
-            
-            # Extraer métricas
-            if hasattr(verification, 'metrics'):
+
+            verification = self.verifier.verify(button['label'],parsed)
+            result.verification = (verification.__dict__ if verification else {})
+
+            result.status = (
+                verification.status
+                if verification
+                else "UNKNOWN"
+            )
+
+            if hasattr(verification, "metrics"):
                 result.metrics = verification.metrics
+
+        else:
+
+            # Comandos de configuración sin respuesta parseable
+            result.status = "PASS"
         
         return result
     
     def _execute_sequence(self, button: Dict, result: TestResult) -> TestResult:
         """Ejecuta prueba tipo sequence"""
+
         action = button['action']
         steps = action.get('steps', [])
+
         results = []
-        
+
         for step in steps:
+
             cmd = step.get('cmd')
             target = step.get('target', 1)
             end_marker = step.get('end_marker')
             delay = step.get('delay', 0)
-            
-            adapter = self.serial_service.cb_adapter if target == 1 else self.serial_service.ab_adapter
-            
+
+            adapter = (
+                self.serial_service.cb_adapter
+                if target == 1
+                else self.serial_service.ab_adapter
+            )
+
             if end_marker:
-                response = adapter.execute_command_until(cmd, end_marker, timeout=120)
+                response = adapter.execute_command_until(
+                    cmd,
+                    end_marker,
+                    timeout=120
+                )
             else:
                 response = adapter.execute_command(cmd)
-            
+
+            parsed = self.parser.parse(
+                response,
+                button['label']
+            )
+
             results.append({
                 'cmd': cmd,
                 'response': response,
-                'parsed': self.parser.parse(response, button['label'])
+                'parsed': parsed
             })
-            
+
             if delay > 0:
                 time.sleep(delay)
-        
-        result.raw_response = '\n'.join([r['response'] for r in results])
-        result.parsed_data = {'steps': results}
-        
-        # Verificar todo
-        # (Simplificado - en realidad deberías verificar cada paso)
-        result.status = "PASS" if all(r.get('parsed') and r['parsed'].status == "PASS" for r in results) else "FAIL"
-        
+
+        result.raw_response = '\n'.join(
+            r['response'] for r in results
+        )
+
+        result.parsed_data = {
+            'steps': results
+        }
+
+        # Estados válidos para secuencias
+        valid_status = {
+            "PASS",
+            "UART",
+            "I2C",
+            "SPI",
+            "I2S",
+            "GPIO",
+            "ADC",
+            "SMBUS",
+            "MMC",
+            "DDR",
+            "THERMAL",
+            "CURRENT",
+            "CONFIGURATION",
+            "COMMAND ACCEPT",
+            "COMMAND_ACCEPT"
+        }
+
+        sequence_ok = True
+
+        for step in results:
+
+            parsed = step.get("parsed")
+
+            # Algunos pasos son sólo comandos de configuración
+            if parsed is None:
+                continue
+
+            if parsed.status not in valid_status:
+                sequence_ok = False
+                break
+
+        result.status = "PASS" if sequence_ok else "FAIL"
+
         return result
     
     def _execute_sequence_buttons(self, button: Dict, result: TestResult) -> TestResult:

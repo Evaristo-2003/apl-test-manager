@@ -24,7 +24,9 @@ from core.ui.widgets.test_card import TestCard
 from core.ui.widgets.status_indicator import StatusIndicator
 from core.ui.styles import AppStyles
 from core.ui.workers.test_worker import run_test_in_thread
-
+from controllers.fixture_controller import FixtureController
+from controllers.test_controller import TestController
+from functools import partial 
 
 class MainWindow(QMainWindow):
     """Ventana principal de la aplicación"""
@@ -38,7 +40,15 @@ class MainWindow(QMainWindow):
         self.serial_service = SerialService()
         self.test_service = TestService(self.serial_service)
         self.button_repo = ButtonRepository()
-        
+        self.fixture_controller = None       
+        self.test_controller = TestController(
+            self.test_service,
+            self.button_repo,
+            self.log_message,
+            self.update_dashboard,
+            self.show_test_result
+        )
+
         # Configurar callbacks del servicio
         self.test_service.set_callbacks(
             on_progress=self.update_progress,
@@ -46,8 +56,6 @@ class MainWindow(QMainWindow):
         )
         
         # Estado
-        self.test_results = {}
-        self.test_status = {}
         self.uart_results = []
         self.gpio_results = []
         
@@ -86,12 +94,18 @@ class MainWindow(QMainWindow):
         fixture_layout = QGridLayout(fixture_group)
         
         self.fixture_status = StatusIndicator("NOT CONNECTED")
+        self.fixture_controller = FixtureController(
+            self.serial_service,
+            self.log_message,
+            self.fixture_status
+        )
         btn_connect = QPushButton("CONNECT")
-        btn_connect.clicked.connect(self.auto_connect_fixture)
+        btn_connect.clicked.connect(self.fixture_controller.auto_connect_fixture)
         btn_disconnect = QPushButton("DISCONNECT")
-        btn_disconnect.clicked.connect(self.disconnect_fixture)
+        btn_disconnect.clicked.connect(self.fixture_controller.disconnect_fixture)
         btn_ports = QPushButton("REFRESH PORTS")
-        btn_ports.clicked.connect(self.refresh_ports)
+        btn_ports.clicked.connect(self.fixture_controller.refresh_ports)
+
         
         fixture_layout.addWidget(btn_connect, 0, 0)
         fixture_layout.addWidget(btn_disconnect, 0, 1)
@@ -106,7 +120,7 @@ class MainWindow(QMainWindow):
         self.test_list = QListWidget()
         for button in self.button_repo.get_all():
             self.test_list.addItem(button['label'])
-            self.test_status[button['label']] = "NOT_RUN"
+            self.test_controller.test_status[button['label']] = "NOT_RUN"
         
         self.test_list.itemClicked.connect(self.show_test_details)
         tests_layout.addWidget(self.test_list)
@@ -135,8 +149,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(results_group)
         
         return tab
-    
-    from functools import partial  # ← Agregar al inicio del archivo
 
     def _create_dashboard_tab(self) -> QWidget:
         """Crea la pestaña de dashboard"""
@@ -197,45 +209,20 @@ class MainWindow(QMainWindow):
     def update_dashboard(self):
         """Actualiza el dashboard con los estados actuales"""
         for test_name, card in self.cards.items():
-            status = self.test_status.get(test_name, "NOT_RUN")
+            status = self.test_controller.test_status.get(test_name, "NOT_RUN")
             card.set_status(status)
     
-    def refresh_ports(self):
-        """Actualiza la lista de puertos disponibles"""
-        ports = self.serial_service.get_ports()
-        self.log_message(f"🔍 Puertos disponibles: {ports if ports else 'Ninguno'}")
-    
     def start_selected_test(self):
-        """Inicia la prueba seleccionada"""
+
         item = self.test_list.currentItem()
+
         if not item:
             self.log_message("⚠️ Selecciona una prueba")
             return
-        
-        test_name = item.text()
-        button = self.button_repo.get_by_label(test_name)
-        if not button:
-            self.log_message(f"❌ Botón no encontrado: {test_name}")
-            return
-        
-        # Actualizar estado visual
-        self.test_status[test_name] = "RUNNING"
-        self.update_dashboard()
-        
-        # ✅ Crear función de ejecución
-        def execute_with_log():
-            return self.test_service.execute_test(button)
-        
-        # ✅ Ejecutar con callbacks seguros
-        runnable = run_test_in_thread(
-            execute_with_log,
-            on_finished=self.on_test_finished,
-            on_log=self.safe_log_message,  # ← Usar función segura
-            on_error=self.safe_error_handler
+
+        self.test_controller.start_test(
+            item.text()
         )
-        
-        # ✅ Guardar referencia al runnable para evitar que se elimine
-        self._current_runnable = runnable
 
     def safe_log_message(self, text: str):
         """Versión segura de log_message"""
@@ -260,14 +247,14 @@ class MainWindow(QMainWindow):
         """Maneja errores de forma segura"""
         self.safe_log_message(f"❌ {error_msg}")
     
-    def on_test_finished(self, result):
-        """Callback cuando termina una prueba"""
-        self.test_results[result.test_name] = result
-        self.test_status[result.test_name] = result.status
+#    def on_test_finished(self, result):
+ #       """Callback cuando termina una prueba"""
+  #      self.test_results[result.test_name] = result
+   #     self.test_status[result.test_name] = result.status
         
-        # Actualizar UI
-        self.update_dashboard()
-        self.show_test_result(result)
+    #    # Actualizar UI
+    #    self.update_dashboard()
+     #   self.show_test_result(result)
     
     def show_test_result(self, result):
         """Muestra el resultado de una prueba"""
@@ -293,24 +280,8 @@ class MainWindow(QMainWindow):
         self.log_message("=" * 70)
     
     def run_all_sequence(self):
-        """Ejecuta la secuencia completa"""
-        self.log_message("🚀 INICIANDO SECUENCIA COMPLETA")
-        self.log_message("⚠️ Esto tomará varios minutos...")
-        
-        button = self.button_repo.get_by_label("All sequence")
-        if not button:
-            self.log_message("❌ Secuencia 'All sequence' no encontrada")
-            return
-        
-        run_test_in_thread(
-            self.test_service.execute_test,
-            button,
-            on_finished=self.on_sequence_finished,
-            on_log=self.log_message,
-            on_progress=self.update_progress,
-            on_error=lambda e: self.log_message(f"❌ {e}")
-        )
-    
+        self.test_controller.run_all_sequence()
+
     def on_sequence_finished(self, result):
         """Callback cuando termina la secuencia completa"""
         self.log_message("")
@@ -340,82 +311,8 @@ class MainWindow(QMainWindow):
             self.result_box.append(f"\n📋 {test_name}")
             self.result_box.append(f"Action: {button.get('action', {})}")
     
-    def auto_connect_fixture(self):
-        """Conecta automáticamente el fixture"""
-        self.log_message("🔌 Conectando fixture...")
-        self.fixture_status.set_status("CONNECTING")
-        
-        # Buscar CB
-        self.log_message("📡 Buscando CB...")
-        cb_port = self.serial_service.find_cb()
-        if not cb_port:
-            self.fixture_status.set_status("FAILED")
-            self.log_message("❌ CB no encontrado")
-            return
-        
-        self.log_message(f"✅ CB encontrado en {cb_port}")
-        
-        # Preparar CB
-        self.log_message("⚙️ Preparando CB...")
-        if not self.serial_service.prepare_cb():
-            self.fixture_status.set_status("FAILED")
-            self.log_message("❌ Error preparando CB")
-            return
-        self.log_message("✅ CB preparado")
-        
-        # Encender AB
-        self.log_message("⏳ Encendiendo AB...")
-        if not self.serial_service.power_on_ab():
-            self.fixture_status.set_status("FAILED")
-            self.log_message("❌ Error encendiendo AB")
-            return
-        self.log_message("✅ Comando de encendido enviado")
-        
-        # Buscar AB
-        self.log_message("📡 Buscando AB (esto puede tomar hasta 60s)...")
-        ab_port = self.serial_service.find_ab(timeout=60)
-        if not ab_port:
-            self.fixture_status.set_status("FAILED")
-            self.log_message("❌ AB no encontrado")
-            return
-        
-        self.log_message(f"✅ AB encontrado en {ab_port}")
-        
-        # Preparar AB
-        self.log_message("⚙️ Preparando AB...")
-        if not self.serial_service.prepare_ab():
-            self.fixture_status.set_status("FAILED")
-            self.log_message("❌ Error preparando AB")
-            return
-        self.log_message("✅ AB preparado")
-        
-        self.fixture_status.set_status("READY")
-        self.log_message("🎯 FIXTURE LISTO")
-    
-    def disconnect_fixture(self):
-        """Desconecta el fixture"""
-        self.log_message("🔌 Desconectando fixture...")
-        self.fixture_status.set_status("CONNECTING")
-        
-        # Borrar DID
-        self.log_message("🧹 Borrando DID...")
-        success, msg = self.serial_service.erase_did()
-        self.log_message(f"   {msg}")
-        
-        # Apagar AB
-        self.log_message("⏻ Apagando AB...")
-        self.serial_service.power_off_ab()
-        
-        # Apagar CB
-        self.log_message("⏻ Apagando CB...")
-        self.serial_service.power_off_cb()
-        
-        # Desconectar
-        self.log_message("🔌 Desconectando puertos...")
-        self.serial_service.disconnect_all()
-        
-        self.fixture_status.set_status("NOT CONNECTED")
-        self.log_message("✅ Fixture desconectado")
+
+
     
     def export_results(self):
         """Exporta resultados a JSON"""
@@ -424,7 +321,7 @@ class MainWindow(QMainWindow):
         data = {
             'timestamp': datetime.now().isoformat(),
             'results': {k: v.to_dict() if hasattr(v, 'to_dict') else str(v) 
-                       for k, v in self.test_results.items()}
+                       for k, v in self.test_controller.test_results.items()}
         }
         
         filename = f"results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
