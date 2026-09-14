@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Script de inicio para APL Test Manager"""
 
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Agregar el directorio actual al path

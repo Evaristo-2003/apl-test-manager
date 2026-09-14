@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Repositorio para limits.json"""
 
 import json
-from typing import Dict, Any, Optional
-from pathlib import Path
 import logging
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +32,7 @@ class LimitsRepository:
             logger.error(f"Error cargando límites: {e}")
             self._limits = self._get_default_limits()
     
-    def _get_default_limits(self) -> Dict:
+    def _get_default_limits(self) -> dict:
         """Retorna límites por defecto si no hay archivo"""
         return {
             "Check PCB ID": {"type": "exists"},
@@ -142,11 +141,11 @@ class LimitsRepository:
             "CSI": {"result": "PASS"}
         }
     
-    def get_limits(self, test_name: str) -> Optional[Dict[str, Any]]:
+    def get_limits(self, test_name: str) -> dict[str, Any] | None:
         """Obtiene los límites para una prueba específica"""
         return self._limits.get(test_name)
     
-    def get_all(self) -> Dict[str, Any]:
+    def get_all(self) -> dict[str, Any]:
         """Obtiene todos los límites"""
         return self._limits
     

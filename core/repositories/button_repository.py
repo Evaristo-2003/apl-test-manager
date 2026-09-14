@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Repositorio para buttons.json"""
 
 import json
-from typing import Dict, List, Optional
 from pathlib import Path
 
 
@@ -29,19 +27,19 @@ class ButtonRepository:
             b['label']: b for b in self._buttons
         }
     
-    def get_all(self) -> List[Dict]:
+    def get_all(self) -> list[dict]:
         """Obtiene todos los botones"""
         return self._buttons
     
-    def get_by_label(self, label: str) -> Optional[Dict]:
+    def get_by_label(self, label: str) -> dict | None:
         """Obtiene un botón por su label"""
         return self._buttons_by_label.get(label)
     
-    def get_test_names(self) -> List[str]:
+    def get_test_names(self) -> list[str]:
         """Obtiene todos los nombres de pruebas"""
         return list(self._buttons_by_label.keys())
     
-    def get_sequence_buttons(self, sequence_name: str) -> List[Dict]:
+    def get_sequence_buttons(self, sequence_name: str) -> list[dict]:
         """Obtiene los botones de una secuencia"""
         button = self.get_by_label(sequence_name)
         if not button:

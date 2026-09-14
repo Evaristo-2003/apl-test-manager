@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Widget de tarjeta de prueba para dashboard"""
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPushButton
-from PySide6.QtCore import Qt, Signal
 
 
 class TestCard(QPushButton):

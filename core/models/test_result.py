@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Modelo de resultado de prueba"""
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Any, Optional, List
-import json
+from typing import Any
 
 
 @dataclass
@@ -13,9 +12,9 @@ class TestMetric:
     """Métrica individual de una prueba"""
     name: str
     value: Any
-    unit: Optional[str] = None
-    min_limit: Optional[float] = None
-    max_limit: Optional[float] = None
+    unit: str | None = None
+    min_limit: float | None = None
+    max_limit: float | None = None
     status: str = "UNKNOWN"  # PASS, FAIL, WARNING
 
 
@@ -25,15 +24,15 @@ class TestResult:
     test_name: str
     status: str  # PASS, FAIL, RUNNING, NOT_RUN, UNKNOWN
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
-    duration_ms: Optional[float] = None
-    metrics: List[TestMetric] = field(default_factory=list)
+    duration_ms: float | None = None
+    metrics: list[TestMetric] = field(default_factory=list)
     raw_response: str = ""
-    parsed_data: Dict[str, Any] = field(default_factory=dict)
-    verification: Dict[str, Any] = field(default_factory=dict)
+    parsed_data: dict[str, Any] = field(default_factory=dict)
+    verification: dict[str, Any] = field(default_factory=dict)
     board_type: str = "UNKNOWN"  # AB, CB
     command: str = ""
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             'test_name': self.test_name,
             'status': self.status,

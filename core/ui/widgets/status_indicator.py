@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Indicador de estado con colores"""
 
 from PySide6.QtWidgets import QLabel

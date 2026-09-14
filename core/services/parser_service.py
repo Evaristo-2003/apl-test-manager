@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Servicio de parsing de resultados - VERSIÓN COMPLETA"""
 
 import re
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -13,8 +12,8 @@ class ParsedResult:
     """Resultado parseado de una prueba"""
     status: str  # PASS, FAIL, INFO, ERROR, etc.
     raw_value: str = ""
-    data: Dict[str, Any] = field(default_factory=dict)
-    metrics: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
+    metrics: dict[str, Any] = field(default_factory=dict)
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
     
     @property
@@ -31,7 +30,7 @@ class ParserService:
     
     RESULT_PATTERN = re.compile(r"\*(.*?)&")
     
-    def parse(self, text: str, test_name: str) -> Optional[ParsedResult]:
+    def parse(self, text: str, test_name: str) -> ParsedResult | None:
         """
         Parsea el resultado de una prueba
         
@@ -330,7 +329,7 @@ class ParserService:
         # Si no se pudo parsear nada
         return None
     
-    def _parse_adc(self, text: str) -> Optional[ParsedResult]:
+    def _parse_adc(self, text: str) -> ParsedResult | None:
         """Parsea ADC"""
         channels = []
         for line in text.splitlines():
@@ -353,7 +352,7 @@ class ParserService:
             )
         return None
     
-    def _parse_pcie(self, text: str) -> Optional[Dict]:
+    def _parse_pcie(self, text: str) -> dict | None:
         """Parsea PCIe/USB"""
         lines = []
         for line in text.splitlines():
@@ -387,7 +386,7 @@ class ParserService:
         
         return {"ports": ports} if ports else None
     
-    def _parse_uart(self, text: str) -> Optional[ParsedResult]:
+    def _parse_uart(self, text: str) -> ParsedResult | None:
         """Parsea UART"""
         if "are identical" not in text:
             return None
@@ -402,7 +401,7 @@ class ParserService:
             metrics={'port': port}
         )
     
-    def _parse_gpio(self, text: str) -> Optional[ParsedResult]:
+    def _parse_gpio(self, text: str) -> ParsedResult | None:
         """Parsea GPIO"""
         match = self.RESULT_PATTERN.search(text)
         if not match:

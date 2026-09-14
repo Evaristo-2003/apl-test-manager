@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Servicio de ejecución de pruebas"""
 
 import time
-from typing import Dict, Optional, Tuple, Callable
-from core.models.test_result import TestResult, TestMetric
-from core.services.parser_service import ParserService
-from core.services.verification_service import VerificationService
+from collections.abc import Callable
+
+from core.models.test_result import TestMetric, TestResult
 from core.repositories.button_repository import ButtonRepository
+from core.services.parser_service import ParserService
 from core.services.serial_service import SerialService
+from core.services.verification_service import VerificationService
 
 
 class TestService:
@@ -19,8 +19,8 @@ class TestService:
         self.button_repo = ButtonRepository()
         self.parser = ParserService()
         self.verifier = VerificationService()
-        self.on_progress: Optional[Callable] = None
-        self.on_log: Optional[Callable] = None
+        self.on_progress: Callable | None = None
+        self.on_log: Callable | None = None
     
 # En test_service.py, modificar para que on_log sea una señal, no una función directa
 
@@ -45,7 +45,10 @@ class TestService:
         if self.on_progress:
             self.on_progress(current, total)
     
-    def execute_test(self, button: Dict) -> TestResult:
+    def execute_test(
+        self,
+        button: dict
+    ) -> TestResult:
         """Ejecuta una prueba individual"""
         label = button['label']
         action = button['action']
@@ -66,21 +69,24 @@ class TestService:
             elif test_type == 'sequence':
                 result = self._execute_sequence(button, result)
             elif test_type == 'sequence_buttons':
-                result = self._execute_sequence_buttons(button, result)
+                result = self._execute_sequence_buttons(
+                    button,
+                    result
+                )
             else:
                 result.status = "FAIL"
                 result.parsed_data = {'error': f'Tipo desconocido: {test_type}'}
         except Exception as e:
             result.status = "FAIL"
             result.parsed_data = {'error': str(e)}
-            self._log(f"❌ ERROR: {str(e)}")
+            self._log(f"❌ ERROR: {e!s}")
         
         result.duration_ms = (time.time() - start_time) * 1000
         self._log(f"✓ FINALIZADO: {label} - {result.status}")
         
         return result
     
-    def _execute_single(self, button: Dict, result: TestResult) -> TestResult:
+    def _execute_single(self, button: dict, result: TestResult) -> TestResult:
         """Ejecuta prueba tipo single"""
         action = button['action']
         cmd = action['cmd']
@@ -122,12 +128,23 @@ class TestService:
 
         else:
 
-            # Comandos de configuración sin respuesta parseable
-            result.status = "PASS"
+            config_only_tests = {
+                "DDR Set Test",
+                "SATA Set port 1",
+                "SATA Set Port 2",
+                "USB3->USB2",
+                "USB3_2",
+                "PWM"
+            }
+
+            if button["label"] in config_only_tests:
+                result.status = "PASS"
+            else:
+                result.status = "UNKNOWN"
         
         return result
     
-    def _execute_sequence(self, button: Dict, result: TestResult) -> TestResult:
+    def _execute_sequence(self, button: dict, result: TestResult) -> TestResult:
         """Ejecuta prueba tipo sequence"""
 
         action = button['action']
@@ -202,9 +219,14 @@ class TestService:
 
         for step in results:
 
+            response = step.get("response", "")
+
+            if response == "NOT CONNECTED":
+                sequence_ok = False
+                break
+
             parsed = step.get("parsed")
 
-            # Algunos pasos son sólo comandos de configuración
             if parsed is None:
                 continue
 
@@ -216,7 +238,11 @@ class TestService:
 
         return result
     
-    def _execute_sequence_buttons(self, button: Dict, result: TestResult) -> TestResult:
+    def _execute_sequence_buttons(
+        self,
+        button: dict,
+        result: TestResult
+    ) -> TestResult:
         """Ejecuta secuencia de botones"""
         action = button['action']
         button_names = action.get('buttons', [])
@@ -232,10 +258,14 @@ class TestService:
             if not btn:
                 self._log(f"⚠️ Botón no encontrado: {name}")
                 continue
-            
+
             # Ejecutar recursivamente (pero sin recursión infinita)
-            sub_result = self.execute_test(btn)
+            sub_result = self.execute_test(
+                btn
+            )
+
             results.append(sub_result)
+
         
         result.parsed_data = {'sub_results': results}
         

@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Adaptador para control FPGA (simplificado)"""
 
 import logging
-from typing import Optional, Dict
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
@@ -61,7 +59,7 @@ class FPGAAdapter:
         self._sequence = 0
     
     def send_command(self, command: int, payload: bytes = b'',
-                     timeout_ms: int = 1000) -> Dict:
+                     timeout_ms: int = 1000) -> dict:
         """Envía comando al FPGA (simulado)"""
         logger.debug(f"FPGA CMD: {command} payload: {payload.hex()}")
         

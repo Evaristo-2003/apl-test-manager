@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Adaptador para comunicación serial"""
 
-import serial
-import time
-from serial.tools import list_ports
-from typing import Optional, Tuple
 import logging
+import time
+
+import serial
+from serial.tools import list_ports
 
 logger = logging.getLogger(__name__)
 
@@ -153,5 +152,5 @@ class SerialAdapter:
             return f"ERROR: {e}"
     
     @property
-    def port(self) -> Optional[str]:
+    def port(self) -> str | None:
         return self._port

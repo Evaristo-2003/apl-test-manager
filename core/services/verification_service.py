@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Servicio de verificación de resultados - VERSIÓN COMPLETA"""
 
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
+from typing import Any
+
 from core.repositories.limits_repository import LimitsRepository
 from core.services.parser_service import ParsedResult
 
@@ -13,8 +13,8 @@ class VerificationResult:
     """Resultado de verificación"""
     status: str  # PASS, FAIL, WARNING, UNKNOWN
     message: str = ""
-    details: Dict[str, Any] = field(default_factory=dict)
-    metrics: List[Dict] = field(default_factory=list)
+    details: dict[str, Any] = field(default_factory=dict)
+    metrics: list[dict] = field(default_factory=list)
     
     @property
     def is_pass(self) -> bool:
@@ -31,7 +31,7 @@ class VerificationService:
     def __init__(self):
         self.limits_repo = LimitsRepository()
     
-    def verify(self, test_name: str, parsed: Optional[ParsedResult]) -> VerificationResult:
+    def verify(self, test_name: str, parsed: ParsedResult | None) -> VerificationResult:
         """Verifica un resultado parseado"""
         if not parsed:
             return VerificationResult(
@@ -140,7 +140,7 @@ class VerificationService:
             if parsed.status == "UART":
                 return VerificationResult(
                     status="PASS",
-                    message=f"UART verificado correctamente",
+                    message="UART verificado correctamente",
                     details={'port': parsed.metrics.get('port', '?')}
                 )
             return VerificationResult(
@@ -362,11 +362,11 @@ class VerificationService:
         
         return VerificationResult(
             status=parsed.status,
-            message=f"Verificación completada",
+            message="Verificación completada",
             details={'parsed_data': parsed.data}
         )
     
-    def _verify_pcie(self, parsed: ParsedResult, limits: Dict) -> VerificationResult:
+    def _verify_pcie(self, parsed: ParsedResult, limits: dict) -> VerificationResult:
         """Verifica PCIe"""
         ports = parsed.data.get('ports', [])
         tx_min = limits.get('tx_min', 0)
@@ -411,7 +411,7 @@ class VerificationService:
             return VerificationResult(status="FAIL", message="; ".join(issues), details={'ports': ports})
         return VerificationResult(status="PASS", message=f"PCIe OK ({len(ports)} puertos)", details={'ports': ports})
     
-    def _verify_usb3(self, parsed: ParsedResult, limits: Dict) -> VerificationResult:
+    def _verify_usb3(self, parsed: ParsedResult, limits: dict) -> VerificationResult:
         """Verifica USB3"""
         ports = parsed.data.get('ports', [])
         tx_min = limits.get('tx_min', 0)
@@ -435,7 +435,7 @@ class VerificationService:
             return VerificationResult(status="FAIL", message="; ".join(issues), details={'ports': ports})
         return VerificationResult(status="PASS", message=f"USB3 OK ({len(ports)} puertos)", details={'ports': ports})
     
-    def _verify_usb2(self, parsed: ParsedResult, limits: Dict) -> VerificationResult:
+    def _verify_usb2(self, parsed: ParsedResult, limits: dict) -> VerificationResult:
         """Verifica USB2"""
         ports = parsed.data.get('ports', [])
         tx_min = limits.get('tx_min', 0)
@@ -459,7 +459,7 @@ class VerificationService:
             return VerificationResult(status="FAIL", message="; ".join(issues), details={'ports': ports})
         return VerificationResult(status="PASS", message=f"USB2 OK ({len(ports)} puertos)", details={'ports': ports})
     
-    def _verify_mmc(self, test_name: str, parsed: ParsedResult, limits: Dict) -> VerificationResult:
+    def _verify_mmc(self, test_name: str, parsed: ParsedResult, limits: dict) -> VerificationResult:
         """Verifica EMMC/SDIO"""
         expected_bus_width = limits.get('bus_width')
         expected_clock = limits.get('clock')

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Worker para ejecutar pruebas en hilos separados"""
 
-from PySide6.QtCore import QRunnable, Signal, QObject, QThreadPool, Qt
-from typing import Callable, Optional, Any
 import traceback
+from collections.abc import Callable
+
+from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal
 
 
 class WorkerSignals(QObject):
     """Señales para comunicación entre hilos"""
+
     log = Signal(str)
     progress = Signal(int, int)
     finished = Signal(object)
@@ -31,11 +32,16 @@ class TestRunnable(QRunnable):
         """Ejecuta la función en el hilo"""
         try:
             self.signals.log.emit("🚀 Hilo iniciado")
-            result = self.func(*self.args, **self.kwargs)
+            result = self.func(
+                *self.args,
+                **self.kwargs
+            )
+            
+
             self.signals.finished.emit(result)
             self.signals.log.emit("✅ Hilo finalizado")
         except Exception as e:
-            error_msg = f"❌ Error: {str(e)}\n{traceback.format_exc()}"
+            error_msg = f"❌ Error: {e!s}\n{traceback.format_exc()}"
             try:
                 self.signals.error.emit(error_msg)
                 self.signals.log.emit(error_msg)
@@ -54,10 +60,11 @@ class TestRunnable(QRunnable):
         self._is_running = False
 
 
-def run_test_in_thread(func: Callable, *args, on_finished: Optional[Callable] = None,
-                       on_log: Optional[Callable] = None, on_error: Optional[Callable] = None,
-                       on_progress: Optional[Callable] = None) -> TestRunnable:
+def run_test_in_thread(func: Callable, *args, on_finished: Callable | None = None,
+                       on_log: Callable | None = None, on_error: Callable | None = None,
+                       on_progress: Callable | None = None) -> TestRunnable:
     """Ejecuta una función en un hilo separado"""
+
     runnable = TestRunnable(func, *args)
     
     # Conectar señales
@@ -69,7 +76,8 @@ def run_test_in_thread(func: Callable, *args, on_finished: Optional[Callable] = 
         runnable.signals.error.connect(on_error)
     if on_progress:
         runnable.signals.progress.connect(on_progress)
-    
+
+        
     # Ejecutar en thread pool
     QThreadPool.globalInstance().start(runnable)
     

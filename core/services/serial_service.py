@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Servicio de comunicación serial"""
 
-from typing import Optional, Dict, Tuple
 from core.adapters.serial_adapter import SerialAdapter
 
 
@@ -14,7 +12,7 @@ class SerialService:
         self.cb_adapter = SerialAdapter()
         self._is_ready = False
     
-    def connect_cb(self, port: str) -> Tuple[bool, str]:
+    def connect_cb(self, port: str) -> tuple[bool, str]:
         """Conecta a CB"""
         if not self.cb_adapter.connect(port):
             return False, f"Error conectando CB en {port}"
@@ -26,7 +24,7 @@ class SerialService:
         
         return True, f"CB conectado en {port}"
     
-    def connect_ab(self, port: str) -> Tuple[bool, str]:
+    def connect_ab(self, port: str) -> tuple[bool, str]:
         """Conecta a AB"""
         if not self.ab_adapter.connect(port):
             return False, f"Error conectando AB en {port}"
@@ -73,7 +71,7 @@ class SerialService:
         self.cb_adapter.execute_command("websocket_test.sh powerswitch 0")
         return True
     
-    def erase_did(self, timeout: int = 30) -> Tuple[bool, str]:
+    def erase_did(self, timeout: int = 30) -> tuple[bool, str]:
         """Borra DID de AB"""
         if not self.ab_adapter.is_connected():
             return False, "AB no conectado"
@@ -101,7 +99,7 @@ class SerialService:
         """Obtiene puertos disponibles"""
         return SerialAdapter.get_available_ports()
     
-    def find_ab(self, timeout: int = 60) -> Optional[str]:
+    def find_ab(self, timeout: int = 60) -> str | None:
         """Busca AB automáticamente"""
         import time
         start = time.time()
@@ -113,7 +111,7 @@ class SerialService:
             time.sleep(2)
         return None
     
-    def find_cb(self) -> Optional[str]:
+    def find_cb(self) -> str | None:
         """Busca CB automáticamente"""
         ports = self.get_ports()
         for port in ports:

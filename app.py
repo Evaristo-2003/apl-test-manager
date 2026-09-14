@@ -4,29 +4,20 @@
 
 import sys
 import json
-import os
 from pathlib import Path
 from datetime import datetime
-from functools import partial
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
-    QListWidget, QTextEdit, QPushButton, QGridLayout,
-    QGroupBox, QLabel, QTabWidget
+    QTextEdit, QPushButton,QTabWidget
 )
-from PySide6.QtCore import Qt
-from PySide6.QtCore import Qt, QThreadPool, Signal, QObject
-from PySide6.QtGui import QTextCursor, QTextCursor  # ← Agregar esta línea
 from core.services.serial_service import SerialService
 from core.services.test_service import TestService
 from core.repositories.button_repository import ButtonRepository
-from core.repositories.limits_repository import LimitsRepository
-from core.ui.widgets.test_card import TestCard
-from core.ui.widgets.status_indicator import StatusIndicator
 from core.ui.styles import AppStyles
 from core.ui.workers.test_worker import run_test_in_thread
-from controllers.fixture_controller import FixtureController
 from controllers.test_controller import TestController
-from functools import partial 
+from core.ui.dashboard_view import DashboardView
+from core.ui.view.runner_view import RunnerView
 
 class MainWindow(QMainWindow):
     """Ventana principal de la aplicación"""
@@ -40,7 +31,8 @@ class MainWindow(QMainWindow):
         self.serial_service = SerialService()
         self.test_service = TestService(self.serial_service)
         self.button_repo = ButtonRepository()
-        self.fixture_controller = None       
+        self.fixture_controller = None
+        self.dashboard_controller = None       
         self.test_controller = TestController(
             self.test_service,
             self.button_repo,
@@ -84,91 +76,53 @@ class MainWindow(QMainWindow):
         results_tab = self._create_results_tab()
         tabs.addTab(results_tab, "Resultados")
     
-    def _create_runner_tab(self) -> QWidget:
-        """Crea la pestaña de ejecución"""
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
-        
-        # Fixture Control
-        fixture_group = QGroupBox("Fixture Control")
-        fixture_layout = QGridLayout(fixture_group)
-        
-        self.fixture_status = StatusIndicator("NOT CONNECTED")
-        self.fixture_controller = FixtureController(
-            self.serial_service,
-            self.log_message,
-            self.fixture_status
-        )
-        btn_connect = QPushButton("CONNECT")
-        btn_connect.clicked.connect(self.fixture_controller.auto_connect_fixture)
-        btn_disconnect = QPushButton("DISCONNECT")
-        btn_disconnect.clicked.connect(self.fixture_controller.disconnect_fixture)
-        btn_ports = QPushButton("REFRESH PORTS")
-        btn_ports.clicked.connect(self.fixture_controller.refresh_ports)
+    def _create_runner_tab(self):
 
-        
-        fixture_layout.addWidget(btn_connect, 0, 0)
-        fixture_layout.addWidget(btn_disconnect, 0, 1)
-        fixture_layout.addWidget(btn_ports, 0, 2)
-        fixture_layout.addWidget(self.fixture_status, 0, 3)
-        layout.addWidget(fixture_group)
-        
-        # Test List
-        tests_group = QGroupBox("Tests")
-        tests_layout = QVBoxLayout(tests_group)
-        
-        self.test_list = QListWidget()
-        for button in self.button_repo.get_all():
-            self.test_list.addItem(button['label'])
-            self.test_controller.test_status[button['label']] = "NOT_RUN"
-        
-        self.test_list.itemClicked.connect(self.show_test_details)
-        tests_layout.addWidget(self.test_list)
-        layout.addWidget(tests_group)
-        
-        # Actions
-        btn_execute = QPushButton("▶ RUN SELECTED TEST")
-        btn_execute.clicked.connect(self.start_selected_test)
-        btn_execute.setStyleSheet("background: #4CAF50; font-size: 14px; padding: 15px;")
-        layout.addWidget(btn_execute)
-        
-        btn_all = QPushButton("▶ RUN ALL SEQUENCE")
-        btn_all.clicked.connect(self.run_all_sequence)
-        btn_all.setStyleSheet("background: #FF9800; font-size: 14px; padding: 15px;")
-        layout.addWidget(btn_all)
-        
-        # Results
-        results_group = QGroupBox("Log / Results")
-        results_layout = QVBoxLayout(results_group)
-        
-        self.result_box = QTextEdit()
-        self.result_box.setReadOnly(True)
-        self.result_box.setFontFamily("Courier New")
-        self.result_box.setFontPointSize(10)
-        results_layout.addWidget(self.result_box)
-        layout.addWidget(results_group)
-        
+        (
+            tab,
+            self.fixture_widget,
+            self.test_list,
+            self.result_box
+        ) = RunnerView.create(
+            self.serial_service,
+            self.button_repo,
+            self.test_controller,
+            self.log_message,
+            self.show_test_details,
+            self.start_selected_test,
+            self.run_all_sequence
+        )
+
+        self.fixture_status = (
+            self.fixture_widget.fixture_status
+        )
+
+        self.fixture_controller = (
+            self.fixture_widget.fixture_controller
+        )
+
         return tab
 
-    def _create_dashboard_tab(self) -> QWidget:
-        """Crea la pestaña de dashboard"""
-        tab = QWidget()
-        layout = QGridLayout(tab)
-        
-        self.cards = {}
-        test_names = self.button_repo.get_test_names()[:20]
-        
-        for idx, test_name in enumerate(test_names):
-            row = idx // 4
-            col = idx % 4
-            
-            card = TestCard(test_name)
-            # ✅ CORREGIDO: usando partial
-            card.clicked.connect(partial(self.run_dashboard_test, test_name))
-            
-            layout.addWidget(card, row, col)
-            self.cards[test_name] = card
-        
+    def _create_dashboard_tab(self):
+
+        (
+            tab,
+            self.dashboard_cards,
+            self.dashboard_groups,
+            self.dashboard_controller,
+            self.dashboard_summary_label,
+            self.dashboard_progress_bar,
+            self.dashboard_fixture_widget
+        ) = DashboardView.create(
+            self.run_dashboard_test,
+            self.test_controller,
+            self.button_repo,
+            self.log_message,
+            self.serial_service
+        )
+
+        return tab
+
         return tab
     
     def _create_results_tab(self) -> QWidget:
@@ -207,10 +161,8 @@ class MainWindow(QMainWindow):
         self.log_message(f"📊 Progreso: {current}/{total} ({current/total*100:.0f}%)")
     
     def update_dashboard(self):
-        """Actualiza el dashboard con los estados actuales"""
-        for test_name, card in self.cards.items():
-            status = self.test_controller.test_status.get(test_name, "NOT_RUN")
-            card.set_status(status)
+        if self.dashboard_controller:
+            self.dashboard_controller.update_dashboard()
     
     def start_selected_test(self):
 
@@ -286,7 +238,7 @@ class MainWindow(QMainWindow):
         """Callback cuando termina la secuencia completa"""
         self.log_message("")
         self.log_message("=" * 70)
-        self.log_message("📊 SECUENCIA COMPLETA FINALIZADA")
+        self.log_message("SECUENCIA COMPLETA FINALIZADA")
         self.log_message(f"   Estado: {result.status}")
         
         if result.metrics:
@@ -295,13 +247,12 @@ class MainWindow(QMainWindow):
         
         self.log_message("=" * 70)
     
+   # def run_dashboard_test(self, test_name: str):
     def run_dashboard_test(self, test_name: str):
-        """Ejecuta prueba desde dashboard"""
-        self.log_message(f"🖱️ Click en: {test_name}")
-        items = self.test_list.findItems(test_name, Qt.MatchFlag.MatchExactly)
-        if items:
-            self.test_list.setCurrentItem(items[0])
-            self.start_selected_test()
+        if self.dashboard_controller:
+            self.dashboard_controller.run_dashboard_test(
+                test_name
+            )
     
     def show_test_details(self, item):
         """Muestra detalles de una prueba"""
@@ -310,9 +261,6 @@ class MainWindow(QMainWindow):
         if button:
             self.result_box.append(f"\n📋 {test_name}")
             self.result_box.append(f"Action: {button.get('action', {})}")
-    
-
-
     
     def export_results(self):
         """Exporta resultados a JSON"""

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Adaptador para comunicación WebSocket (futuro)"""
 
 import json
 import logging
-from typing import Optional, Dict, Any
 from dataclasses import dataclass, field
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +15,7 @@ class WSMessage:
     command: str
     client_type: str = "ab"
     client_ip: str = "192.168.1.101"
-    parameters: Dict[str, Any] = field(default_factory=dict)
+    parameters: dict[str, Any] = field(default_factory=dict)
     timeout: int = 5
     
     def to_json(self) -> str:
@@ -43,7 +42,7 @@ class WSResponse:
     command: str = ""
     
     @classmethod
-    def from_json(cls, data: Dict) -> 'WSResponse':
+    def from_json(cls, data: dict) -> 'WSResponse':
         result = data.get('result', {})
         return cls(
             status=result.get('status', 500),
@@ -80,7 +79,7 @@ class WebSocketAdapter:
         """Desconecta del servidor"""
         self._connected = False
     
-    async def send_message(self, message: WSMessage) -> Optional[WSResponse]:
+    async def send_message(self, message: WSMessage) -> WSResponse | None:
         """Envía un mensaje y espera respuesta (simulado)"""
         logger.debug(f"Enviando: {message.to_json()}")
         
