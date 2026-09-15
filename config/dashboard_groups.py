@@ -1,9 +1,5 @@
 DASHBOARD_GROUPS = {
 
-    "Ejecución": [
-        "All sequence"
-    ],
-
     "Identificación (Versiones - IDs)": [
         "Check PCB ID",
         "CBHW Version",

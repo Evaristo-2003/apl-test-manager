@@ -18,7 +18,7 @@ from core.ui.workers.test_worker import run_test_in_thread
 from controllers.test_controller import TestController
 from core.ui.dashboard_view import DashboardView
 from core.ui.view.runner_view import RunnerView
-
+from PySide6.QtCore import (Qt,QTimer)
 class MainWindow(QMainWindow):
     """Ventana principal de la aplicación"""
     
@@ -53,6 +53,11 @@ class MainWindow(QMainWindow):
         
         # Configurar UI
         self._setup_ui()
+        self.dashboard_timer = QTimer()
+
+        self.dashboard_timer.timeout.connect(
+            self.dashboard_controller.update_dashboard
+        )
         self.setStyleSheet(AppStyles.MAIN)
     
     def _setup_ui(self):
@@ -61,20 +66,21 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
         main_layout = QVBoxLayout(central)
         
-        tabs = QTabWidget()
-        main_layout.addWidget(tabs)
+        self.tabs = QTabWidget()
+        self.tabs.tabBar().setCursor(Qt.PointingHandCursor)
+        main_layout.addWidget(self.tabs)
         
         # Tab 1: Test Runner
         runner_tab = self._create_runner_tab()
-        tabs.addTab(runner_tab, "Test Runner")
+        self.tabs.addTab(runner_tab, "Test Runner")
         
         # Tab 2: Dashboard
         dashboard_tab = self._create_dashboard_tab()
-        tabs.addTab(dashboard_tab, "Dashboard")
+        self.tabs.addTab(dashboard_tab, "Dashboard")
         
         # Tab 3: Resultados
         results_tab = self._create_results_tab()
-        tabs.addTab(results_tab, "Resultados")
+        self.tabs.addTab(results_tab, "Resultados")
     
     def _create_runner_tab(self):
 
@@ -112,9 +118,12 @@ class MainWindow(QMainWindow):
             self.dashboard_controller,
             self.dashboard_summary_label,
             self.dashboard_progress_bar,
-            self.dashboard_fixture_widget
+            self.dashboard_fixture_widget,
+            self.dashboard_run_all_button
         ) = DashboardView.create(
             self.run_dashboard_test,
+            self.run_dashboard_sequence,
+            self.open_dashboard_result,
             self.test_controller,
             self.button_repo,
             self.log_message,
@@ -246,7 +255,26 @@ class MainWindow(QMainWindow):
                 self.log_message(f"   {metric.name}: {metric.value}")
         
         self.log_message("=" * 70)
-    
+
+    def run_dashboard_sequence(self):
+
+        self.dashboard_run_all_button.setEnabled(
+            False
+        )
+
+        self.dashboard_run_all_button.setText(
+            "⏳ RUNNING..."
+        )
+
+        self.dashboard_timer.start(250)
+
+        runnable = (
+            self.test_controller.run_dashboard_sequence()
+        )
+
+        runnable.signals.finished.connect(
+            lambda _: self.dashboard_sequence_finished()
+        )
    # def run_dashboard_test(self, test_name: str):
     def run_dashboard_test(self, test_name: str):
         if self.dashboard_controller:
@@ -281,6 +309,50 @@ class MainWindow(QMainWindow):
         # Mostrar en pestaña de resultados
         self.results_text.setText(json.dumps(data, indent=2, default=str))
 
+    def dashboard_sequence_finished(self):
+
+        self.dashboard_timer.stop()
+
+        self.dashboard_controller.update_dashboard()
+
+        self.dashboard_run_all_button.setEnabled(
+            True
+        )
+
+        self.dashboard_run_all_button.setText(
+            "▶ RUN ALL DASHBOARD TESTS"
+        )
+
+        self.log_message(
+            "✅ DASHBOARD SEQUENCE FINALIZADA"
+        )
+
+    def open_dashboard_result(
+        self,
+        test_name
+    ):
+
+        result = (
+            self.test_controller
+            .test_results
+            .get(test_name)
+        )
+
+        if not result:
+
+            self.log_message(
+                f"⚠️ No hay resultado para {test_name}"
+            )
+
+            return
+
+        self.test_controller.show_result(
+            result
+        )
+
+        self.tabs.setCurrentIndex(
+            0
+        )
 
 def main():
     """Punto de entrada principal"""

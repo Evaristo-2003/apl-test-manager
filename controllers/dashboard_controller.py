@@ -103,6 +103,7 @@ class DashboardController:
         self.progress_bar.setValue(
             percentage
         )
+
     def run_dashboard_test(self, test_name):
 
         self.log(
@@ -112,3 +113,4 @@ class DashboardController:
         self.test_controller.start_test(
             test_name
         )
+

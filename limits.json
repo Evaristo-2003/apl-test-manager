@@ -175,12 +175,6 @@
         "temperature_min": 20,
         "temperature_max": 95
     },
-
-    "AB CPU Temp": {
-        "temperature_min": 20,
-        "temperature_max": 95
-    },
-
     "AB Erase DID": {
         "type": "exists"
     },

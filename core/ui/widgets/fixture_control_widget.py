@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QVBoxLayout
 )
-
+from PySide6.QtCore import Qt
 from core.ui.widgets.status_indicator import StatusIndicator
 from controllers.fixture_controller import FixtureController
 from core.ui.styles import AppStyles
@@ -71,6 +71,19 @@ class FixtureControlWidget(QWidget):
         btn_refresh.setStyleSheet(
             AppStyles.REFRESH_BUTTON
         )
+
+        btn_connect.setCursor(
+            Qt.PointingHandCursor
+        )
+
+        btn_disconnect.setCursor(
+            Qt.PointingHandCursor
+        )
+
+        btn_refresh.setCursor(
+            Qt.PointingHandCursor
+        )
+
         group_layout.addWidget(
             btn_connect,
             0,

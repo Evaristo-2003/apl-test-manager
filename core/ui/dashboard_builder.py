@@ -13,7 +13,7 @@ from core.ui.widgets.test_card import TestCard
 class DashboardBuilder:
 
     @staticmethod
-    def build(run_callback):
+    def build(run_callback,view_result_callback):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -50,7 +50,9 @@ class DashboardBuilder:
                         test_name
                     )
                 )
-
+                card.rightClicked.connect(
+                    view_result_callback
+                )
                 grid.addWidget(
                     card,
                     row,

@@ -7,13 +7,15 @@ class AppStyles:
 
     MAIN = """
         QMainWindow {
-            background: #f5f5f5;
+            background: #F3F2F1;
         }
 
         QGroupBox {
             font-weight: bold;
-            border: 2px solid #cccccc;
-            border-radius: 8px;
+            color: #323130;
+            background: white;
+            border: 1px solid #D2D0CE;
+            border-radius: 10px;
             margin-top: 10px;
             padding-top: 10px;
         }
@@ -140,7 +142,7 @@ class AppStyles:
 
     REFRESH_BUTTON = """
         QPushButton {
-            background-color: #1565C0;
+            background-color: #2D3748;
             color: white;
             font-weight: bold;
             border: none;
@@ -149,7 +151,7 @@ class AppStyles:
         }
 
         QPushButton:hover {
-            background-color: #1976D2;
+            background-color: #4A5568;
         }
 
         QPushButton:pressed {
@@ -216,5 +218,29 @@ class AppStyles:
 
         QPushButton:hover {
             background-color: #4A5568;
+        }
+    """
+
+    DASHBOARD_RUN_ALL_BUTTON = """
+        QPushButton {
+            background-color: #2E7D32;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        QPushButton:hover {
+            background-color: #388E3C;
+        }
+
+        QPushButton:pressed {
+            background-color: #1B5E20;
+        }
+
+        QPushButton:disabled {
+            background-color: #757575;
+            color: white;
         }
     """

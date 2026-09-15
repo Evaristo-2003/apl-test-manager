@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Widget de tarjeta de prueba para dashboard"""
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt,Signal
 from PySide6.QtWidgets import QPushButton
 
 
 class TestCard(QPushButton):
     """Tarjeta de prueba en el dashboard"""
-    
+    rightClicked = Signal(str) 
     # Colores por estado
     COLORS = {
         "NOT_RUN": "#F1F0EC",
@@ -51,3 +51,15 @@ class TestCard(QPushButton):
                 background: #d6ebff;
             }}
         """)
+
+    def mousePressEvent(self, event):
+
+        if event.button() == Qt.RightButton:
+
+            self.rightClicked.emit(
+                self.test_name
+            )
+
+            return
+
+        super().mousePressEvent(event)

@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QPushButton
 )
-
+from PySide6.QtCore import Qt
 
 class CollapsibleGroup(QWidget):
 
@@ -12,11 +12,15 @@ class CollapsibleGroup(QWidget):
 
         self._title = title
         self._expanded = True
-
+        self._summary = ""
         self.main_layout = QVBoxLayout(self)
 
         self.btn_toggle = QPushButton(
             f"▼ {title}"
+        )
+
+        self.btn_toggle.setCursor(
+            Qt.PointingHandCursor
         )
 
         self.btn_toggle.clicked.connect(
