@@ -131,8 +131,6 @@ class MainWindow(QMainWindow):
         )
 
         return tab
-
-        return tab
     
     def _create_results_tab(self) -> QWidget:
         """Crea la pestaña de resultados"""

@@ -7,10 +7,12 @@
         "type": "exists"
     },
     "Kernel Version": {
-        "type": "exists"
+        "contains": "4.1.27"
     },
     "CPU info": {
-        "type": "exists"
+        "CPU_MHZ": 2000,
+        "CPU_MAX_MHZ": 2000,
+        "CPU_MIN_MHZ": 800
     },
     "Thermal Port 0": {
         "temperature_min": 15,
@@ -156,19 +158,19 @@
         "result": "PASS"
     },
     "CBHW Version": {
-        "type": "exists"
+        "expected": "G"
     },
 
     "CBSW Version": {
-        "type": "exists"
+        "expected": "v1.0.4.25 20201225"
     },
 
     "ABHW Version": {
-        "type": "exists"
+        "expected": "H"
     },
 
     "ABSW Version": {
-        "type": "exists"
+        "expected": "V0.0.5.5 20210219"
     },
 
     "AB CPU TEMP": {
@@ -176,7 +178,7 @@
         "temperature_max": 95
     },
     "AB Erase DID": {
-        "type": "exists"
+        "expected": "exists"
     },
 
     "HDMI": {

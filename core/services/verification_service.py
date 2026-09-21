@@ -341,6 +341,56 @@ class VerificationService:
                 status="FAIL",
                 message=f"CPU Temp fuera de rango: {temp}°C"
             )
+        # ----- VERIFICACIÓN POR VALOR ESPERADO -----
+
+        if "expected" in limits:
+
+            expected = str(
+                limits["expected"]
+            ).strip().upper()
+
+            actual = ""
+
+            if "version" in parsed.data:
+
+                actual = str(
+                    parsed.data["version"]
+                ).strip().upper()
+
+            elif "value" in parsed.data:
+
+                actual = str(
+                    parsed.data["value"]
+                ).strip().upper()
+
+            else:
+
+                actual = str(
+                    parsed.raw_value
+                ).strip().upper()
+
+            if actual == expected:
+
+                return VerificationResult(
+                    status="PASS",
+                    message="Valor esperado verificado",
+                    details={
+                        "expected": expected,
+                        "actual": actual
+                    }
+                )
+
+            return VerificationResult(
+                status="FAIL",
+                message=(
+                    f"Esperado '{expected}' "
+                    f"pero obtenido '{actual}'"
+                ),
+                details={
+                    "expected": expected,
+                    "actual": actual
+                }
+            )
         # ----- VERIFICACIÓN POR TIPO "exists" -----
         if limits.get('type') == 'exists':
             if parsed.raw_value:
