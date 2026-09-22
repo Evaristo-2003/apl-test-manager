@@ -19,6 +19,15 @@ from controllers.test_controller import TestController
 from core.ui.dashboard_view import DashboardView
 from core.ui.view.runner_view import RunnerView
 from PySide6.QtCore import (Qt,QTimer)
+from core.services.sapme_service import (
+    SapmeService
+)
+from core.ui.widgets.sapme_control_widget import (
+    SapmeControlWidget
+)
+from core.state.app_state import (
+    app_state
+)
 class MainWindow(QMainWindow):
     """Ventana principal de la aplicación"""
     
@@ -30,6 +39,7 @@ class MainWindow(QMainWindow):
         # Inicializar servicios
         self.serial_service = SerialService()
         self.test_service = TestService(self.serial_service)
+        self.sapme_service = SapmeService()
         self.button_repo = ButtonRepository()
         self.fixture_controller = None
         self.dashboard_controller = None       
@@ -52,6 +62,16 @@ class MainWindow(QMainWindow):
         self.gpio_results = []
         
         # Configurar UI
+        self.sapme_widget = SapmeControlWidget(
+            self.load_sapme
+        )
+
+        self.tabs = QTabWidget()
+
+        self.tabs.tabBar().setCursor(
+            Qt.PointingHandCursor
+        )
+
         self._setup_ui()
         self.dashboard_timer = QTimer()
 
@@ -62,25 +82,50 @@ class MainWindow(QMainWindow):
     
     def _setup_ui(self):
         """Configura la interfaz de usuario"""
+
         central = QWidget()
         self.setCentralWidget(central)
+
         main_layout = QVBoxLayout(central)
-        
+
+        self.sapme_widget = SapmeControlWidget(
+            self.load_sapme
+        )
+
+        main_layout.addWidget(
+            self.sapme_widget
+        )
+
         self.tabs = QTabWidget()
-        self.tabs.tabBar().setCursor(Qt.PointingHandCursor)
-        main_layout.addWidget(self.tabs)
-        
-        # Tab 1: Test Runner
+
+        self.tabs.tabBar().setCursor(
+            Qt.PointingHandCursor
+        )
+
+        main_layout.addWidget(
+            self.tabs
+        )
+
+        # Tab 1
         runner_tab = self._create_runner_tab()
-        self.tabs.addTab(runner_tab, "Test Runner")
-        
-        # Tab 2: Dashboard
+        self.tabs.addTab(
+            runner_tab,
+            "Test Runner"
+        )
+
+        # Tab 2
         dashboard_tab = self._create_dashboard_tab()
-        self.tabs.addTab(dashboard_tab, "Dashboard")
-        
-        # Tab 3: Resultados
+        self.tabs.addTab(
+            dashboard_tab,
+            "Dashboard"
+        )
+
+        # Tab 3
         results_tab = self._create_results_tab()
-        self.tabs.addTab(results_tab, "Resultados")
+        self.tabs.addTab(
+            results_tab,
+            "Resultados"
+        )
     
     def _create_runner_tab(self):
 
@@ -352,6 +397,36 @@ class MainWindow(QMainWindow):
             0
         )
 
+    def load_sapme(
+        self,
+        sfc: str
+    ):
+
+        print(
+            f"LOAD SAPME: {sfc}"
+        )
+
+        self.sapme_widget.set_loading()
+
+        success = self.sapme_service.load_sfc(
+            sfc
+        )
+
+        if success:
+
+            self.sapme_widget.set_ready(
+                operation=app_state.operation,
+                tests_loaded=app_state.tests_loaded,
+                sync_time=app_state.last_sync.strftime(
+                    "%H:%M:%S"
+                )
+            )
+            self.fixture_widget.btn_connect.setEnabled(
+                True
+            )
+        else:
+
+            self.sapme_widget.set_failed()
 def main():
     """Punto de entrada principal"""
     # Crear directorios necesarios

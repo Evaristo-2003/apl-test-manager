@@ -37,67 +37,67 @@ class FixtureControlWidget(QWidget):
 
         group_layout = QGridLayout(group)
 
-        btn_connect = QPushButton(
+        self.btn_connect = QPushButton(
             "CONNECT"
         )
 
-        btn_connect.clicked.connect(
+        self.btn_connect.clicked.connect(
             self.fixture_controller.auto_connect_fixture
         )
 
-        btn_disconnect = QPushButton(
+        self.btn_disconnect = QPushButton(
             "DISCONNECT"
         )
 
-        btn_disconnect.clicked.connect(
+        self.btn_disconnect.clicked.connect(
             self.fixture_controller.disconnect_fixture
         )
 
-        btn_refresh = QPushButton(
+        self.btn_refresh = QPushButton(
             "REFRESH PORTS"
         )
 
-        btn_refresh.clicked.connect(
+        self.btn_refresh.clicked.connect(
             self.fixture_controller.refresh_ports
         )
-        btn_connect.setStyleSheet(
+        self.btn_connect.setStyleSheet(
             AppStyles.CONNECT_BUTTON
         )
 
-        btn_disconnect.setStyleSheet(
+        self.btn_disconnect.setStyleSheet(
             AppStyles.DISCONNECT_BUTTON
         )
 
-        btn_refresh.setStyleSheet(
+        self.btn_refresh.setStyleSheet(
             AppStyles.REFRESH_BUTTON
         )
 
-        btn_connect.setCursor(
+        self.btn_connect.setCursor(
             Qt.PointingHandCursor
         )
 
-        btn_disconnect.setCursor(
+        self.btn_disconnect.setCursor(
             Qt.PointingHandCursor
         )
 
-        btn_refresh.setCursor(
+        self.btn_refresh.setCursor(
             Qt.PointingHandCursor
         )
 
         group_layout.addWidget(
-            btn_connect,
+            self.btn_connect,
             0,
             0
         )
 
         group_layout.addWidget(
-            btn_disconnect,
+            self.btn_disconnect,
             0,
             1
         )
 
         group_layout.addWidget(
-            btn_refresh,
+            self.btn_refresh,
             0,
             2
         )
@@ -107,5 +107,5 @@ class FixtureControlWidget(QWidget):
             0,
             3
         )
-
+        self.btn_connect.setEnabled(False)
         layout.addWidget(group)
