@@ -103,18 +103,39 @@ class TestService:
             response = adapter.execute_command_until(cmd, end_marker, timeout=120)
         else:
             response = adapter.execute_command(cmd)
-        
+            print(
+                f"[RESPONSE] {button['label']} -> {response[:100]}"
+            )  
+            print(
+                f"[USB3_2 RAW LEN] {len(response)}"
+            )
+
+            with open(
+                "usb32.txt",
+                "w",
+                encoding="utf-8"
+            ) as f:
+                f.write(response)
+            print(
+                response[-3000:]
+            )
         result.raw_response = response
         
         # Parsear
         parsed = self.parser.parse(response, button['label'])
+        print(
+            f"[PARSED] {button['label']} -> {parsed}"
+        )
         result.parsed_data = parsed.__dict__ if parsed else {}
         
         # Verificar
 
         if parsed:
-
             verification = self.verifier.verify(button['label'],parsed)
+            print(
+                "[VERIFICATION STATUS]",
+                verification.status
+            )
             result.verification = (verification.__dict__ if verification else {})
 
             result.status = (
@@ -146,12 +167,11 @@ class TestService:
     
     def _execute_sequence(self, button: dict, result: TestResult) -> TestResult:
         """Ejecuta prueba tipo sequence"""
-
         action = button['action']
         steps = action.get('steps', [])
 
         results = []
-
+        current_gpio_pattern = None
         for step in steps:
 
             cmd = step.get('cmd')
@@ -179,10 +199,55 @@ class TestService:
                 button['label']
             )
 
+            #
+            # Detectar marker GPIO
+            #
+            if (
+                parsed
+                and
+                parsed.status == "GPIO"
+            ):
+                bits = parsed.data.get(
+                    "bits",
+                    ""
+                )
+
+                if "GROUP" in bits:
+
+                    current_gpio_pattern = bits
+
+            #
+            # Asociar dump GPIO con el último marker
+            #
+            if (
+                parsed
+                and
+                parsed.status == "GPIO"
+                and
+                current_gpio_pattern
+            ):
+
+                parsed.data["pattern"] = (
+                    current_gpio_pattern
+                )
+
+                parsed.metrics["pattern"] = (
+                    current_gpio_pattern
+                )
+
+            verification = None
+            if parsed:
+
+                verification = self.verifier.verify(
+                    button["label"],
+                    parsed
+                )
+
             results.append({
-                'cmd': cmd,
-                'response': response,
-                'parsed': parsed
+                "cmd": cmd,
+                "response": response,
+                "parsed": parsed,
+                "verification": verification
             })
 
             if delay > 0:
@@ -195,6 +260,19 @@ class TestService:
         result.parsed_data = {
             'steps': results
         }
+        if button["label"] == "ADC":
+
+            for step in results:
+
+                parsed = step.get("parsed")
+
+                if parsed:
+
+                    verification = self.verifier.verify(
+                        "ADC",
+                        parsed
+                    )
+
 
         # Estados válidos para secuencias
         valid_status = {
@@ -230,10 +308,20 @@ class TestService:
             if parsed is None:
                 continue
 
-            if parsed.status not in valid_status:
-                sequence_ok = False
-                break
+            verification = step.get(
+                "verification"
+            )
 
+            if verification:
+
+                if verification.status != "PASS":
+
+                    sequence_ok = False
+
+                    break
+        print(
+            f"[SEQUENCE RESULT] {button['label']} -> {sequence_ok}"
+        )
         result.status = "PASS" if sequence_ok else "FAIL"
 
         return result

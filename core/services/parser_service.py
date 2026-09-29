@@ -86,15 +86,25 @@ class ParserService:
         if "ADC" in test_name:
             return self._parse_adc(text)
         
-        # ----- USB3_3 Iperf Test -----
-        if "USB3_3 Iperf Test" in test_name:
+        # ----- USB3 -----
+
+        if "USB3" in test_name:
+
             parsed = self._parse_pcie(text)
+
             if parsed:
+
                 return ParsedResult(
                     status="USB3",
                     raw_value=raw_value,
-                    data={'ports': parsed['ports']},
-                    metrics={'ports': len(parsed['ports'])}
+                    data={
+                        'ports': parsed['ports']
+                    },
+                    metrics={
+                        'ports': len(
+                            parsed['ports']
+                        )
+                    }
                 )
         
         # ----- USB2 Iperf Test -----

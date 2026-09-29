@@ -33,6 +33,9 @@ class VerificationService:
     
     def verify(self, test_name: str, parsed: ParsedResult | None) -> VerificationResult:
         """Verifica un resultado parseado"""
+        print(
+            f"[VERIFY]{test_name}"
+        )
         if not parsed:
             return VerificationResult(
                 status="UNKNOWN",
@@ -42,7 +45,107 @@ class VerificationService:
             return VerificationResult(
                 status="PASS",
                 message=f"Comando aceptado: {parsed.status}"
-            )        
+            )
+        # ----- UART -----
+        if "UART" in test_name:
+
+            limits = self.limits_repo.get_limits(
+                test_name
+            )
+
+            expected = "PASS"
+
+            if limits:
+                expected = limits.get(
+                    "expected_result",
+                    "PASS"
+                )
+
+            actual = parsed.data.get(
+                "result",
+                ""
+            )
+
+            if actual == expected:
+
+                return VerificationResult(
+                    status="PASS",
+                    message="UART verificado correctamente"
+                )
+
+            return VerificationResult(
+                status="FAIL",
+                message=f"UART esperado {expected}, obtenido {actual}"
+            )    
+        # ----- SPI -----
+        if "SPI" in test_name:
+            if parsed.data.get('result', '') == "PASS":
+                return VerificationResult(
+                    status="PASS",
+                    message="SPI verificado correctamente",
+                    details={'device_id': parsed.data.get('device_id', '')}
+                )
+            return VerificationResult(
+                status="FAIL",
+                message="SPI falló"
+            )
+        # ----- I2S -----
+
+        if "I2S" in test_name:
+
+            limits = self.limits_repo.get_limits(
+                test_name
+            )
+
+            expected = limits.get(
+                "expected_result",
+                "PASS"
+            )
+
+            score_min = limits.get(
+                "score_min",
+                999
+            )
+
+            score_max = limits.get(
+                "score_max",
+                1001
+            )
+
+            actual_result = parsed.data.get(
+                "result",
+                ""
+            )
+
+            score = int(
+                parsed.metrics.get(
+                    "score",
+                    0
+                )
+            )
+
+            if (
+                actual_result == expected
+                and
+                score_min <= score <= score_max
+            ):
+
+                return VerificationResult(
+                    status="PASS",
+                    message=f"I2S OK score={score}",
+                    details={
+                        "score": score
+                    }
+                )
+
+            return VerificationResult(
+                status="FAIL",
+                message=(
+                    f"I2S FAIL result={actual_result} "
+                    f"score={score}"
+                )
+            )
+
         limits = self.limits_repo.get_limits(test_name)
         if not limits:
             return VerificationResult(
@@ -72,6 +175,7 @@ class VerificationService:
         
         # ----- THERMAL -----
         if "Thermal" in test_name:
+
             temp_min = limits.get('temperature_min', -100)
             temp_max = limits.get('temperature_max', 100)
             hum_min = limits.get('humidity_min', 0)
@@ -79,7 +183,7 @@ class VerificationService:
             
             temp = parsed.metrics.get('temp_c', 0)
             hum = parsed.metrics.get('humidity_pct', 0)
-            
+
             issues = []
             if temp < temp_min or temp > temp_max:
                 issues.append(f"Temperatura {temp}°C fuera de rango [{temp_min}-{temp_max}]")
@@ -105,7 +209,7 @@ class VerificationService:
             v_max = limits.get('voltage_max', 100)
             
             voltage = parsed.metrics.get('voltage_v', 0)
-            
+
             if voltage < v_min or voltage > v_max:
                 return VerificationResult(
                     status="FAIL",
@@ -124,8 +228,15 @@ class VerificationService:
             return self._verify_pcie(parsed, limits)
         
         # ----- USB3 -----
-        if "USB3_3 Iperf Test" in test_name:
-            return self._verify_usb3(parsed, limits)
+        if (
+            "USB3_3 Iperf Test" in test_name
+            or
+            "USB3_2 Iperf Test" in test_name
+        ):
+            return self._verify_usb3(
+                parsed,
+                limits
+            )
         
         # ----- USB2 -----
         if "USB2 Iperf Test" in test_name:
@@ -134,19 +245,8 @@ class VerificationService:
         # ----- EMMC/SDIO -----
         if test_name in ["EMMC-8bit", "EMMC-4bit", "SDIO"]:
             return self._verify_mmc(test_name, parsed, limits)
-        
-        # ----- UART -----
-        if "UART" in test_name:
-            if parsed.status == "UART":
-                return VerificationResult(
-                    status="PASS",
-                    message="UART verificado correctamente",
-                    details={'port': parsed.metrics.get('port', '?')}
-                )
-            return VerificationResult(
-                status="FAIL",
-                message="UART falló"
-            )
+
+
         
         # ----- GPIO -----
         if "GPIO" in test_name:
@@ -164,55 +264,115 @@ class VerificationService:
                 details={'bits': parsed.metrics.get('bits', '')}
             )
         # ----- ADC -----
-
         if "ADC" in test_name:
 
-            channels = parsed.data.get("channels", [])
+            channels = parsed.data.get(
+                "channels",
+                []
+            )
 
-            if len(channels) < 8:
+            if len(channels) < 6:
+
                 return VerificationResult(
                     status="FAIL",
                     message="ADC incompleto"
                 )
 
-            limits_map = [
-                ("ADC0_CH0", 1.71, 1.89),
-                ("ADC0_CH1", 3.135, 3.465),
-                ("ADC0_CH2", 0.95, 1.10),
-                ("ADC0_CH3", 1.71, 1.89),
-                ("ADC0_CH4", 1.178, 1.302),
-                ("ADC0_CH5", 0.945, 1.045),
-                ("ADC0_CH6", 1.05, 1.15),
-                ("ADC0_CH7", 3.135, 3.465),
-            ]
+            adc_limits = limits
 
             issues = []
 
-            for idx, (_, low, high) in enumerate(limits_map):
+            #
+            # Detectar ADC0 o ADC1
+            #
 
-                try:
-                    value = float(channels[idx])
+            is_adc1 = False
 
-                    if value < low or value > high:
-                        issues.append(
-                            f"CH{idx}: {value}"
-                        )
+            try:
 
-                except Exception:
-                    issues.append(
-                        f"CH{idx}: INVALID"
-                    )
-
-            if issues:
-                return VerificationResult(
-                    status="FAIL",
-                    message="; ".join(issues)
+                first_value = float(
+                    channels[0]
                 )
 
-            return VerificationResult(
-                status="PASS",
-                message="ADC OK"
-            )       
+                #
+                # ADC1 suele arrancar cerca de 0.9V
+                # ADC0 suele arrancar cerca de 1.8V
+                #
+
+                if first_value < 1.2:
+                    is_adc1 = True
+
+            except Exception:
+                pass
+
+            prefix = (
+                "ADC1"
+                if is_adc1
+                else "ADC0"
+            )
+
+            max_channels = (
+                6
+                if is_adc1
+                else 8
+            )
+
+            for idx in range(max_channels):
+
+                key = f"{prefix}_CH{idx}"
+
+                if key not in adc_limits:
+
+                    issues.append(
+                        f"{key}: LIMIT NOT FOUND"
+                    )
+
+                    continue
+
+                try:
+
+                    value = float(
+                        channels[idx]
+                    )
+
+                except Exception:
+
+                    issues.append(
+                        f"{key}: INVALID"
+                    )
+
+                    continue
+
+                low = float(
+                    adc_limits[key]["low"]
+                )
+
+                high = float(
+                    adc_limits[key]["high"]
+                )
+
+                if value < low or value > high:
+
+                    issues.append(
+                        f"{key}: {value}"
+                    )
+
+                if issues:
+
+                    return VerificationResult(
+                        status="FAIL",
+                        message="; ".join(
+                            issues
+                        )
+                    )
+
+
+                return VerificationResult(
+                    status="PASS",
+                    message=f"{prefix} OK (SAPME)"
+                )
+
+           
         # ----- I2C -----
         if "I2C" in test_name:
             temp_min = limits.get('temperature_min', -100)
@@ -231,43 +391,6 @@ class VerificationService:
                 details={'temp': temp}
             )
         
-        # ----- SPI -----
-        if "SPI" in test_name:
-            if parsed.data.get('result', '') == "PASS":
-                return VerificationResult(
-                    status="PASS",
-                    message="SPI verificado correctamente",
-                    details={'device_id': parsed.data.get('device_id', '')}
-                )
-            return VerificationResult(
-                status="FAIL",
-                message="SPI falló"
-            )
-        
-        # ----- I2S -----
-        if "I2S" in test_name:
-
-            score = int(
-                parsed.metrics.get("score", 0)
-            )
-
-            if (
-                parsed.data.get("result", "") == "PASS"
-                and
-                999 <= score <= 1001
-            ):
-
-                return VerificationResult(
-                    status="PASS",
-                    message=f"I2S OK score={score}",
-                    details={"score": score}
-                )
-
-            return VerificationResult(
-                status="FAIL",
-                message=f"I2S score inválido: {score}",
-                details={"score": score}
-            )
         
         # ----- SMBus -----
         if "SMBus" in test_name:
@@ -308,18 +431,35 @@ class VerificationService:
                 status="FAIL",
                 message=f"MRC Threshold: esperado {expected}, obtenido {actual}"
             )
-        
+
         # ----- CSI -----
+
         if "CSI" in test_name:
-            expected = limits.get('result', 'PASS')
-            if "PASS" in parsed.raw_value or expected == "PASS":
+
+            expected = limits.get(
+                "expected_result",
+                "PASS"
+            )
+
+            actual = (
+                "PASS"
+                if parsed.status == "PASS"
+                else "FAIL"
+            )
+
+            if actual == expected:
+
                 return VerificationResult(
                     status="PASS",
                     message="CSI verificado correctamente"
                 )
+
             return VerificationResult(
                 status="FAIL",
-                message="CSI falló"
+                message=(
+                    f"CSI esperado {expected}, "
+                    f"obtenido {actual}"
+                )
             )
         
         # ----- COMMAND ACCEPT / CONFIGURATION -----
@@ -330,7 +470,6 @@ class VerificationService:
 
             temp_min = limits.get("temperature_min", 0)
             temp_max = limits.get("temperature_max", 100)
-
             if temp_min <= temp <= temp_max:
                 return VerificationResult(
                     status="PASS",
@@ -416,98 +555,488 @@ class VerificationService:
             details={'parsed_data': parsed.data}
         )
     
-    def _verify_pcie(self, parsed: ParsedResult, limits: dict) -> VerificationResult:
-        """Verifica PCIe"""
-        ports = parsed.data.get('ports', [])
-        tx_min = limits.get('tx_min', 0)
-        rx_min = limits.get('rx_min', 0)
-        required_ports = limits.get('required_ports', [])
-        ports = [
-            p for p in ports
-            if p["port"] in required_ports
-        ]        
+    def _verify_pcie(
+        self,
+        parsed: ParsedResult,
+        limits: dict
+    ) -> VerificationResult:
+        """Verifica PCIe usando límites SAPME"""
+
+        ports = parsed.data.get(
+            "ports",
+            []
+        )
+
+        sapme_ports = limits.get(
+            "pcie_limits",
+            {}
+        )
+
         issues = []
+
+        #
+        # Mapeo parser -> SAPME
+        #
+        # Parser:
+        # 1,2,3,4
+        #
+        # SAPME:
+        # PORT_0,PORT_1,PORT_2,PORT_3
+        #
+
+        port_mapping = {
+            1: "PORT_0",
+            2: "PORT_1",
+            3: "PORT_2",
+            4: "PORT_3"
+        }
+
         for port in ports:
 
-            if port['ping'] != "PINGOK":
-                issues.append(
-                    f"Port {port['port']}: PINGNG"
-                )
+            parser_port = port["port"]
+
+            sapme_key = port_mapping.get(
+                parser_port
+            )
+
+            if not sapme_key:
+
                 continue
+
+            if sapme_key not in sapme_ports:
+
+                issues.append(
+                    f"{sapme_key}: LIMIT NOT FOUND"
+                )
+
+                continue
+
+            expected = sapme_ports[sapme_key]
+
+            expected_ping = str(
+                expected["PING"]["high"]
+            )
+
+
+ 
+            #
+            # Puerto especial WEBSOCKET
+            #
+
+            if expected_ping == "WEBSOCKET":
+
+                continue
+
+            if port["ping"] != expected_ping:
+
+                issues.append(
+                    f"{sapme_key}: "
+                    f"{port['ping']} != {expected_ping}"
+                )
+
+                continue
+
+            #
+            # TX/RX NULL
+            #
 
             if (
-                port['tx'] == "NULL"
-                or port['rx'] == "NULL"
+                port["tx"] == "NULL"
+                or port["rx"] == "NULL"
             ):
-                issues.append(
-                    f"Port {port['port']}: NULL result"
+                print(
+                    f"[NULL PORT] {sapme_key}"
                 )
+                issues.append(
+                    f"{sapme_key}: NULL RESULT"
+                )
+
                 continue
 
-            tx = float(port['tx'])
-            rx = float(port['rx'])
+            #
+            # TX/RX reales
+            #
 
-            if tx < tx_min:
+            tx = float(
+                port["tx"]
+            )
+
+            rx = float(
+                port["rx"]
+            )
+
+            tx_min = float(
+                expected["TX"]["low"]
+            )
+
+            tx_max = float(
+                expected["TX"]["high"]
+            )
+
+            rx_min = float(
+                expected["RX"]["low"]
+            )
+
+            rx_max = float(
+                expected["RX"]["high"]
+            )
+            print(
+                f"{sapme_key} "
+                f"TX={tx} "
+                f"RANGE=[{tx_min}-{tx_max}] "
+                f"RX={rx} "
+                f"RANGE=[{rx_min}-{rx_max}]"
+            )
+            #
+            # Si SAPME tiene 0/0
+            # significa "no validar"
+            #
+
+            if not (
+                tx_min == 0
+                and
+                tx_max == 0
+            ):
+
+                if (
+                    tx < tx_min
+                    or
+                    tx > tx_max
+                ):
+
+                    issues.append(
+                        f"{sapme_key}: "
+                        f"TX {tx}"
+                    )
+
+            if not (
+                rx_min == 0
+                and
+                rx_max == 0
+            ):
+
+                if (
+                    rx < rx_min
+                    or
+                    rx > rx_max
+                ):
+
+                    issues.append(
+                        f"{sapme_key}: "
+                        f"RX {rx}"
+                    )
+
+        if issues:
+
+            return VerificationResult(
+                status="FAIL",
+                message="; ".join(
+                    issues
+                ),
+                details={
+                    "ports": ports
+                }
+            )
+
+        return VerificationResult(
+            status="PASS",
+            message=f"PCIe OK ({len(ports)} puertos SAPME)",
+            details={
+                "ports": ports
+            }
+        )
+    
+    def _verify_usb3(
+        self,
+        parsed: ParsedResult,
+        limits: dict
+    ) -> VerificationResult:
+
+        ports = parsed.data.get(
+            "ports",
+            []
+        )
+
+        sapme_ports = limits.get(
+            "usb_limits",
+            {}
+        )
+
+        issues = []
+
+        port_mapping = {
+            1: "PORT_0",
+            2: "PORT_1",
+            3: "PORT_2",
+            4: "PORT_3"
+        }
+
+        for port in ports:
+
+            parser_port = port["port"]
+
+            sapme_key = port_mapping.get(
+                parser_port
+            )
+
+            if not sapme_key:
+
+                continue
+
+            if sapme_key not in sapme_ports:
+
                 issues.append(
-                    f"Port {port['port']}: TX {tx} < {tx_min}"
+                    f"{sapme_key}: LIMIT NOT FOUND"
                 )
 
-            if rx < rx_min:
+                continue
+
+            expected = sapme_ports[sapme_key]
+
+            expected_ping = str(
+                expected["PING"]["high"]
+            )
+
+            if port["ping"] != expected_ping:
+
                 issues.append(
-                    f"Port {port['port']}: RX {rx} < {rx_min}"
+                    f"{sapme_key}: "
+                    f"{port['ping']} != {expected_ping}"
                 )
-        
+
+                continue
+
+            tx = float(
+                port["tx"]
+            )
+
+            rx = float(
+                port["rx"]
+            )
+
+            tx_min = float(
+                expected["TX"]["low"]
+            )
+
+            tx_max = float(
+                expected["TX"]["high"]
+            )
+
+            rx_min = float(
+                expected["RX"]["low"]
+            )
+
+            rx_max = float(
+                expected["RX"]["high"]
+            )
+
+            print(
+                f"[USB3 PORT] {sapme_key}"
+            )
+
+            print(
+                f"[TX] {tx}"
+            )
+
+            print(
+                f"[RX] {rx}"
+            )
+
+            #
+            # 0/0 = SAPME indica no validar
+            #
+
+            if not (
+                tx_min == 0
+                and
+                tx_max == 0
+            ):
+
+                if (
+                    tx < tx_min
+                    or
+                    tx > tx_max
+                ):
+
+                    issues.append(
+                        f"{sapme_key}: TX {tx}"
+                    )
+
+            if not (
+                rx_min == 0
+                and
+                rx_max == 0
+            ):
+
+                if (
+                    rx < rx_min
+                    or
+                    rx > rx_max
+                ):
+
+                    issues.append(
+                        f"{sapme_key}: RX {rx}"
+                    )
+
         if issues:
-            return VerificationResult(status="FAIL", message="; ".join(issues), details={'ports': ports})
-        return VerificationResult(status="PASS", message=f"PCIe OK ({len(ports)} puertos)", details={'ports': ports})
+
+            return VerificationResult(
+                status="FAIL",
+                message="; ".join(
+                    issues
+                )
+            )
+
+
+        return VerificationResult(
+            status="PASS",
+            message="USB3 OK (SAPME)"
+        )
     
-    def _verify_usb3(self, parsed: ParsedResult, limits: dict) -> VerificationResult:
-        """Verifica USB3"""
-        ports = parsed.data.get('ports', [])
-        tx_min = limits.get('tx_min', 0)
-        tx_max = limits.get('tx_max', 9999)
-        rx_min = limits.get('rx_min', 0)
-        rx_max = limits.get('rx_max', 9999)
-        expected_ping = limits.get('ping', 'PINGOK')
-        
+    def _verify_usb2(
+        self,
+        parsed: ParsedResult,
+        limits: dict
+    ) -> VerificationResult:
+
+        ports = parsed.data.get(
+            "ports",
+            []
+        )
+
+        sapme_ports = limits.get(
+            "usb_limits",
+            {}
+        )
+
         issues = []
+
+        port_mapping = {
+            1: "PORT_0",
+            2: "PORT_1",
+            3: "PORT_2",
+            4: "PORT_3"
+        }
+
         for port in ports:
-            if port['ping'] != expected_ping:
-                issues.append(f"Port {port['port']}: ping {port['ping']} (esperado {expected_ping})")
-            tx = float(port['tx'])
-            rx = float(port['rx'])
-            if tx < tx_min or tx > tx_max:
-                issues.append(f"Port {port['port']}: TX {tx} fuera de rango [{tx_min}-{tx_max}]")
-            if rx < rx_min or rx > rx_max:
-                issues.append(f"Port {port['port']}: RX {rx} fuera de rango [{rx_min}-{rx_max}]")
-        
+
+            parser_port = port["port"]
+
+            sapme_key = port_mapping.get(
+                parser_port
+            )
+
+            if not sapme_key:
+                continue
+
+            if sapme_key not in sapme_ports:
+
+                issues.append(
+                    f"{sapme_key}: LIMIT NOT FOUND"
+                )
+
+                continue
+
+            expected = sapme_ports[sapme_key]
+
+            expected_ping = str(
+                expected["PING"]["high"]
+            )
+
+            if port["ping"] != expected_ping:
+
+                issues.append(
+                    f"{sapme_key}: "
+                    f"{port['ping']} != {expected_ping}"
+                )
+
+                continue
+
+            tx = float(
+                port["tx"]
+            )
+
+            rx = float(
+                port["rx"]
+            )
+
+            tx_min = float(
+                expected["TX"]["low"]
+            )
+
+            tx_max = float(
+                expected["TX"]["high"]
+            )
+
+            rx_min = float(
+                expected["RX"]["low"]
+            )
+
+            rx_max = float(
+                expected["RX"]["high"]
+            )
+
+            print(
+                f"[USB2 PORT] {sapme_key}"
+            )
+
+            print(
+                f"[TX LIMITS] {tx_min} -> {tx_max}"
+            )
+
+            print(
+                f"[RX LIMITS] {rx_min} -> {rx_max}"
+            )
+
+            print(
+                f"[TX ACTUAL] {tx}"
+            )
+
+            print(
+                f"[RX ACTUAL] {rx}"
+            )
+
+            if (
+                tx < tx_min
+                or
+                tx > tx_max
+            ):
+
+                issues.append(
+                    f"{sapme_key}: TX {tx}"
+                )
+
+            if (
+                rx < rx_min
+                or
+                rx > rx_max
+            ):
+
+                issues.append(
+                    f"{sapme_key}: RX {rx}"
+                )
+
         if issues:
-            return VerificationResult(status="FAIL", message="; ".join(issues), details={'ports': ports})
-        return VerificationResult(status="PASS", message=f"USB3 OK ({len(ports)} puertos)", details={'ports': ports})
-    
-    def _verify_usb2(self, parsed: ParsedResult, limits: dict) -> VerificationResult:
-        """Verifica USB2"""
-        ports = parsed.data.get('ports', [])
-        tx_min = limits.get('tx_min', 0)
-        tx_max = limits.get('tx_max', 9999)
-        rx_min = limits.get('rx_min', 0)
-        rx_max = limits.get('rx_max', 9999)
-        expected_ping = limits.get('ping', 'PINGOK')
-        
-        issues = []
-        for port in ports:
-            if port['ping'] != expected_ping:
-                issues.append(f"Port {port['port']}: ping {port['ping']} (esperado {expected_ping})")
-            tx = float(port['tx'])
-            rx = float(port['rx'])
-            if tx < tx_min or tx > tx_max:
-                issues.append(f"Port {port['port']}: TX {tx} fuera de rango [{tx_min}-{tx_max}]")
-            if rx < rx_min or rx > rx_max:
-                issues.append(f"Port {port['port']}: RX {rx} fuera de rango [{rx_min}-{rx_max}]")
-        
-        if issues:
-            return VerificationResult(status="FAIL", message="; ".join(issues), details={'ports': ports})
-        return VerificationResult(status="PASS", message=f"USB2 OK ({len(ports)} puertos)", details={'ports': ports})
+
+            print(
+                "[USB2 RESULT] FAIL"
+            )
+
+            return VerificationResult(
+                status="FAIL",
+                message="; ".join(
+                    issues
+                )
+            )
+
+        print(
+            "[USB2 RESULT] PASS"
+        )
+
+        return VerificationResult(
+            status="PASS",
+            message="USB2 OK (SAPME)"
+        )
     
     def _verify_mmc(self, test_name: str, parsed: ParsedResult, limits: dict) -> VerificationResult:
         """Verifica EMMC/SDIO"""
@@ -520,7 +1049,6 @@ class VerificationService:
         actual_clock = parsed.metrics.get('clock', '')
         actual_timing = parsed.metrics.get('timing', '')
         actual_result = parsed.data.get('result', '')
-        
         issues = []
         if expected_bus_width and actual_bus_width != expected_bus_width:
             issues.append(f"Bus width: {actual_bus_width} (esperado {expected_bus_width})")

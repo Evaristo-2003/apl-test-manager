@@ -158,7 +158,24 @@ class AppStyles:
             background-color: #0D47A1;
         }
     """
+    LOADSAPME_BUTTON = """
+        QPushButton {
+            background-color: #2D3748;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+        }
 
+        QPushButton:hover {
+            background-color: #4A5568;
+        }
+
+        QPushButton:pressed {
+            background-color: #0D47A1;
+        }
+    """
     # ----------------------------------
     # TEST ACTIONS
     # ----------------------------------

@@ -1,0 +1,45 @@
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html dir="ltr">
+<head>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+	<meta http-equiv="Expires" content="0" />
+	<meta http-equiv="Cache-Control" content="no-cache" />
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Refresh" content="5; URL=/XMII/Illuminator?service=Personalization&sniffer=Unknown,1.0,600,800" />
+
+	<script type="text/javascript" src="JavaScript/sniffer.js"></script>
+	<script type="text/javascript">
+	function initialize() {
+		// determine browser info
+		sniffBrowser();
+
+		var service = (browserType != null ? browserType : "") + ",";
+		service = service + (browserVersion != null ? browserVersion : "") + ",";
+		service = service + (pageHeight != null ? pageHeight : "") + ",";
+		service = service + (pageWidth != null ? pageWidth : "") + ",";
+
+		document.form.sniffer.value = service;
+		document.form.submit();
+	}
+	</script>
+</head>
+
+<body style="font-size: 8pt; font-family: Arial;" onload="initialize();">
+	<a href="javascript:document.form.submit()">Home</a>
+	<form name="form" method="get" action="/XMII/Illuminator">
+		<input type="hidden" name="xsrfid" value="2l047v5PQ_2zrn3lVCTZMUxHqQBpTvmBmeU"/>
+		<input type="hidden" name="service" value="Personalization" />
+		<input type="hidden" name="sniffer" value="Unknown,1.0,600,800" />
+	</form>
+</body>
+</html>

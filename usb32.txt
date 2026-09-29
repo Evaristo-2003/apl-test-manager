@@ -1,0 +1,12 @@
+websocket_test.sh emmc8_info
+mmc0:
+bus width:	3 (8 bits)
+actual clock:	200000000 Hz
+timing spec:	10 (mmc HS400)
+ 
+<<<<<<<<<< Emmc8bit_bus_width : 3
+<<<<<<<<<< Emmc8bit_actual_clock  : 200000000
+<<<<<<<<<< Emmc8bit_timing_spec : 10
+*NONE|3|200000000|10&
+root@harman-si-intel-plk:~# 
+root@harman-si-intel-plk:~# 

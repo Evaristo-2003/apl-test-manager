@@ -54,7 +54,7 @@ DASHBOARD_GROUPS = {
         "USB2 number of port",
         "USB2 Iperf Test",
         "USB3->USB2",
-        "USB3_2",
+        "USB3_2 Iperf Test",
     ],
 
     "Multimedia": [

@@ -302,11 +302,30 @@
         }
     },
     {
-        "label": "USB3_2",
+        "label": "USB3_2 number of port",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh usb3 client 0 3 1",
+            "target": 2,
+            "expect_result": true
+        }
+    },
+    {
+        "label": "USB3_2 Iperf Test",
+        "action": {
+            "type": "single",
+            "cmd": "websocket_test.sh usb3 client 0 3 3",
+            "target": 2,
+            "expect_result": true,
+            "end_marker": "usb3_RSULT_RETURN"
+        }
+    },
+    {
+        "label": "USB2 to USB3",
         "action": {
             "type": "single",
             "cmd": "websocket_test.sh usb3 usb3tousb2 0",
-            "target": 2,
+            "target": 1,
             "expect_result": false
         }
     },

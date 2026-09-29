@@ -412,6 +412,14 @@ class MainWindow(QMainWindow):
             sfc
         )
 
+        import json
+
+        print(
+            json.dumps(
+                app_state.sapme_limits["PCIE"],
+                indent=2
+            )
+        )
         if success:
 
             self.sapme_widget.set_ready(
@@ -421,12 +429,15 @@ class MainWindow(QMainWindow):
                     "%H:%M:%S"
                 )
             )
+
             self.fixture_widget.btn_connect.setEnabled(
                 True
             )
+
         else:
 
             self.sapme_widget.set_failed()
+
 def main():
     """Punto de entrada principal"""
     # Crear directorios necesarios
