@@ -28,6 +28,18 @@ from core.ui.widgets.sapme_control_widget import (
 from core.state.app_state import (
     app_state
 )
+from controllers.fixture_controller import (
+    FixtureController
+)
+from core.reporting.html_report_builder import (
+    HtmlReportBuilder
+)
+from core.ui.view.results_view import (
+    ResultsView
+)
+from core.ui.view.analysis_view import (
+    AnalysisView
+)
 class MainWindow(QMainWindow):
     """Ventana principal de la aplicación"""
     
@@ -38,10 +50,17 @@ class MainWindow(QMainWindow):
         
         # Inicializar servicios
         self.serial_service = SerialService()
+        self.fixture_controller = FixtureController(
+            self.serial_service,
+            self.log_message
+        )
+
+        self.fixture_controller.analysis_callback = (
+            self.on_analysis_failure
+        )
         self.test_service = TestService(self.serial_service)
         self.sapme_service = SapmeService()
         self.button_repo = ButtonRepository()
-        self.fixture_controller = None
         self.dashboard_controller = None       
         self.test_controller = TestController(
             self.test_service,
@@ -60,7 +79,7 @@ class MainWindow(QMainWindow):
         # Estado
         self.uart_results = []
         self.gpio_results = []
-        
+        self.analysis_log = []
         # Configurar UI
         self.sapme_widget = SapmeControlWidget(
             self.load_sapme
@@ -106,12 +125,12 @@ class MainWindow(QMainWindow):
             self.tabs
         )
 
-        # Tab 1
-        runner_tab = self._create_runner_tab()
-        self.tabs.addTab(
-            runner_tab,
-            "Test Runner"
-        )
+#        # Tab 1
+ #       runner_tab = self._create_runner_tab()
+  #      self.tabs.addTab(
+   #         runner_tab,
+    #        "Test Runner"
+     #   )
 
         # Tab 2
         dashboard_tab = self._create_dashboard_tab()
@@ -126,34 +145,14 @@ class MainWindow(QMainWindow):
             results_tab,
             "Resultados"
         )
-    
-    def _create_runner_tab(self):
+        # Tab 4
+        analysis_tab = self._create_analysis_tab()
 
-        (
-            tab,
-            self.fixture_widget,
-            self.test_list,
-            self.result_box
-        ) = RunnerView.create(
-            self.serial_service,
-            self.button_repo,
-            self.test_controller,
-            self.log_message,
-            self.show_test_details,
-            self.start_selected_test,
-            self.run_all_sequence
+        self.tabs.addTab(
+            analysis_tab,
+            "Analysis"
         )
-
-        self.fixture_status = (
-            self.fixture_widget.fixture_status
-        )
-
-        self.fixture_controller = (
-            self.fixture_widget.fixture_controller
-        )
-
-        return tab
-
+   
     def _create_dashboard_tab(self):
 
         (
@@ -172,42 +171,117 @@ class MainWindow(QMainWindow):
             self.test_controller,
             self.button_repo,
             self.log_message,
-            self.serial_service
+            self.fixture_controller
         )
 
         return tab
     
     def _create_results_tab(self) -> QWidget:
-        """Crea la pestaña de resultados"""
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
-        
-        btn_export = QPushButton("📊 EXPORT RESULTS")
-        btn_export.clicked.connect(self.export_results)
-        layout.addWidget(btn_export)
-        
-        self.results_text = QTextEdit()
-        self.results_text.setReadOnly(True)
-        self.results_text.setFontFamily("Courier New")
-        layout.addWidget(self.results_text)
-        
-        return tab
-    
+
+        self.results_view = ResultsView()
+
+        self.results_view.set_export_callback(
+            self.export_results
+        )
+
+        return self.results_view
+   
+    def save_analysis_log(
+        self,
+        failure_type,
+        analysis_steps=None
+    ):
+
+        Path(
+            "analysis_logs"
+        ).mkdir(
+            exist_ok=True
+        )
+
+        filename = (
+            f"analysis_logs/"
+            f"{failure_type}_"
+            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        )
+
+        with open(
+            filename,
+            "w",
+            encoding="utf-8"
+        ) as f:
+
+            f.write(
+                "========================\n"
+            )
+
+            f.write(
+                "CB LOG\n"
+            )
+
+            f.write(
+                "========================\n\n"
+            )
+
+            f.write(
+                self.fixture_controller
+                .serial_service
+                .get_cb_console_log()
+            )
+
+            f.write(
+                "\n\n"
+            )
+
+            f.write(
+                "========================\n"
+            )
+
+            f.write(
+                "AB LOG\n"
+            )
+
+            f.write(
+                "========================\n\n"
+            )
+
+            f.write(
+                self.fixture_controller
+                .serial_service
+                .get_ab_console_log()
+            )
+
+        self.log_message(
+            f"📄 Analysis log saved: {filename}"
+        )
+
+        return filename
+
+    def on_analysis_failure(
+        self,
+        failure_type,
+        analysis_steps
+    ):
+
+        self.save_analysis_log(
+            failure_type,
+            analysis_steps
+        ) 
     # ===== ACCIONES =====
-    
+
     def log_message(self, text: str):
-        """Añade mensaje al log"""
-        try:
-            from PySide6.QtGui import QTextCursor
-            timestamp = datetime.now().strftime("%H:%M:%S")
-            self.result_box.append(f"[{timestamp}] {text}")
-            cursor = self.result_box.textCursor()
-            cursor.movePosition(QTextCursor.End)
-            self.result_box.setTextCursor(cursor)
-        except RuntimeError:
-            # El objeto ya fue eliminado, ignorar
-            pass
-    
+        """Mensajes de log"""
+
+        timestamp = (
+            datetime.now()
+            .strftime("%H:%M:%S")
+        )
+
+        print(
+            f"[{timestamp}] {text}"
+        )
+        self.analysis_log.append(
+            f"[{timestamp}] {text}"
+        )
     def update_progress(self, current: int, total: int):
         """Actualiza progreso"""
         self.log_message(f"📊 Progreso: {current}/{total} ({current/total*100:.0f}%)")
@@ -228,23 +302,20 @@ class MainWindow(QMainWindow):
             item.text()
         )
 
-    def safe_log_message(self, text: str):
+    def safe_log_message(
+        self,
+        text: str
+    ):
         """Versión segura de log_message"""
+
         try:
-            if not hasattr(self, 'result_box') or self.result_box is None:
-                return
-            from PySide6.QtGui import QTextCursor
-            timestamp = datetime.now().strftime("%H:%M:%S")
-            self.result_box.append(f"[{timestamp}] {text}")
-            cursor = self.result_box.textCursor()
-            if cursor:
-                cursor.movePosition(QTextCursor.End)
-                self.result_box.setTextCursor(cursor)
-        except RuntimeError:
-            # El objeto ya fue eliminado, ignorar
-            pass
+
+            self.log_message(
+                text
+            )
+
         except Exception:
-            # Cualquier otro error, ignorar
+
             pass
 
     def safe_error_handler(self, error_msg: str):
@@ -268,7 +339,7 @@ class MainWindow(QMainWindow):
         self.log_message(f"{status_icon} {result.test_name}")
         self.log_message(f"   Estado: {result.status}")
         self.log_message(f"   Duración: {result.duration_ms:.0f}ms")
-        
+
         if result.metrics:
             self.log_message("   Métricas:")
             for metric in result.metrics:
@@ -327,11 +398,22 @@ class MainWindow(QMainWindow):
     
     def show_test_details(self, item):
         """Muestra detalles de una prueba"""
+
         test_name = item.text()
-        button = self.button_repo.get_by_label(test_name)
+
+        button = self.button_repo.get_by_label(
+            test_name
+        )
+
         if button:
-            self.result_box.append(f"\n📋 {test_name}")
-            self.result_box.append(f"Action: {button.get('action', {})}")
+
+            self.log_message(
+                f"📋 {test_name}"
+            )
+
+            self.log_message(
+                f"Action: {button.get('action', {})}"
+            )
     
     def export_results(self):
         """Exporta resultados a JSON"""
@@ -342,15 +424,77 @@ class MainWindow(QMainWindow):
             'results': {k: v.to_dict() if hasattr(v, 'to_dict') else str(v) 
                        for k, v in self.test_controller.test_results.items()}
         }
-        
+        json_text = json.dumps(
+            data,
+            indent=2,
+            default=str
+        )
         filename = f"results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, default=str)
+        if self.results_view.export_json_enabled():
+
+            with open(
+                filename,
+                'w',
+                encoding='utf-8'
+            ) as f:
+
+                json.dump(
+                    data,
+                    f,
+                    indent=2,
+                    default=str
+                )
+
+            self.log_message(
+                f"✅ JSON exportado a {filename}"
+            )
+        html_filename = filename.replace(
+            ".json",
+            ".html"
+        )
+
+        html = HtmlReportBuilder.build(
+            self.test_controller.test_results,
+            sfc=getattr(
+                app_state,
+                "current_sfc",
+                ""
+            ),
+            operation=getattr(
+                app_state,
+                "operation",
+                ""
+            ),
+            project=getattr(
+                app_state,
+                "project",
+                ""
+            )
+        )
         
+        self.results_view.set_html(
+            html
+        )
+
+        self.results_view.set_json(
+            json_text
+        )
+        if self.results_view.export_html_enabled():
+
+            with open(
+                html_filename,
+                "w",
+                encoding="utf-8"
+            ) as f:
+
+                f.write(html)
+
+            self.log_message(
+                f"✅ HTML exportado a {html_filename}"
+            )      
         self.log_message(f"✅ Resultados exportados a {filename}")
         
-        # Mostrar en pestaña de resultados
-        self.results_text.setText(json.dumps(data, indent=2, default=str))
+
 
     def dashboard_sequence_finished(self):
 
@@ -363,7 +507,7 @@ class MainWindow(QMainWindow):
         )
 
         self.dashboard_run_all_button.setText(
-            "▶ RUN ALL DASHBOARD TESTS"
+            "RUN ALL TESTS"
         )
 
         self.log_message(
@@ -402,35 +546,69 @@ class MainWindow(QMainWindow):
         sfc: str
     ):
 
-        print(
-            f"LOAD SAPME: {sfc}"
+        new_sfc = sfc.strip()
+
+        previous_sfc = getattr(
+            app_state,
+            "current_sfc",
+            None
         )
 
+        print(
+            f"LOAD SAPME: {new_sfc}"
+        )
+
+        #
+        # Detectar cambio de SFC
+        #
+        sfc_changed = (
+            previous_sfc is not None
+            and
+            previous_sfc != new_sfc
+        )
+
+        #
+        # Si cambió el SFC
+        #
+        if sfc_changed:
+
+            print(
+                f"[NEW SFC] {previous_sfc} -> {new_sfc}"
+            )
+
+            self.reset_for_new_sfc()
+
+        #
+        # Mostrar estado visual
+        #
         self.sapme_widget.set_loading()
 
+        #
+        # Intentar carga SAPME
+        #
         success = self.sapme_service.load_sfc(
-            sfc
+            new_sfc
         )
 
-        import json
-
-        print(
-            json.dumps(
-                app_state.sapme_limits["PCIE"],
-                indent=2
-            )
-        )
         if success:
+
+            app_state.current_sfc = new_sfc
 
             self.sapme_widget.set_ready(
                 operation=app_state.operation,
                 tests_loaded=app_state.tests_loaded,
                 sync_time=app_state.last_sync.strftime(
                     "%H:%M:%S"
-                )
+                ),
+                project=app_state.project
             )
 
-            self.fixture_widget.btn_connect.setEnabled(
+            self.sapme_widget.set_project(
+                app_state.project
+            )
+
+
+            self.fixture_controller.set_connect_enabled(
                 True
             )
 
@@ -438,18 +616,174 @@ class MainWindow(QMainWindow):
 
             self.sapme_widget.set_failed()
 
+    def reset_for_new_sfc(self):
+
+        print(
+            "[RESET] Nueva corrida"
+        )
+
+        #
+        # Limpiar resultados
+        #
+        self.test_controller.test_results.clear()
+
+        self.test_controller.test_status.clear()
+        for test_name in self.button_repo.get_test_names():
+
+            self.test_controller.test_status[
+                test_name
+            ] = "NOT_RUN"
+        #
+        # Limpiar panel resultados
+        #
+        if hasattr(
+            self,
+            "results_view"
+        ):
+
+            self.results_view.set_html(
+                ""
+            )
+
+            self.results_view.set_json(
+                ""
+            )
+       
+        #
+        # Reiniciar flujo USB
+        #
+        self.test_controller.completed_tests.clear()
+
+        self.test_controller.usb3_tests_completed = False
+
+        self.test_controller.usb_mode = "USB3"
+
+        #
+        # Refrescar dashboard
+        #
+        self.update_dashboard()
+
+    def _create_analysis_tab(self):
+
+        self.analysis_view = AnalysisView()
+
+        self.analysis_view.btn_refresh_ports.clicked.connect(
+            self.refresh_analysis_ports
+        )
+
+        self.refresh_analysis_ports()
+
+        return self.analysis_view
+
+    def refresh_analysis_ports(self):
+
+        ports = (
+            self.serial_service
+            .get_ports()
+        )
+
+        self.analysis_view.set_ports(
+            ports
+        )
+
+from PySide6.QtGui import (
+    QColor,
+    QPalette
+)       
+
 def main():
     """Punto de entrada principal"""
+
     # Crear directorios necesarios
-    Path("logs").mkdir(exist_ok=True)
-    
-    app = QApplication(sys.argv)
-    app.setStyle("Fusion")
-    
+    Path("logs").mkdir(
+        exist_ok=True
+    )
+
+    app = QApplication(
+        sys.argv
+    )
+
+    #
+    # Estilo uniforme
+    #
+    app.setStyle(
+        "Fusion"
+    )
+
+    #
+    # Force Light Theme
+    #
+    palette = QPalette()
+
+    palette.setColor(
+        QPalette.Window,
+        QColor("#FFFFFF")
+    )
+
+    palette.setColor(
+        QPalette.WindowText,
+        QColor("#202020")
+    )
+
+    palette.setColor(
+        QPalette.Base,
+        QColor("#FFFFFF")
+    )
+
+    palette.setColor(
+        QPalette.AlternateBase,
+        QColor("#F5F5F5")
+    )
+
+    palette.setColor(
+        QPalette.Text,
+        QColor("#202020")
+    )
+
+    palette.setColor(
+        QPalette.Button,
+        QColor("#F0F0F0")
+    )
+
+    palette.setColor(
+        QPalette.ButtonText,
+        QColor("#202020")
+    )
+
+    app.setPalette(
+        palette
+    )
+
+    #
+    # Estilos globales
+    #
+    app.setStyleSheet("""
+    QMainWindow {
+        background-color: white;
+    }
+
+    QWidget {
+        background-color: white;
+        color: #202020;
+    }
+
+    QGroupBox {
+        background-color: white;
+        color: #202020;
+    }
+
+    QLabel {
+        color: #202020;
+    }
+    """)
+
     window = MainWindow()
+
     window.show()
-    
-    sys.exit(app.exec())
+
+    sys.exit(
+        app.exec()
+    )
 
 
 if __name__ == "__main__":

@@ -119,3 +119,17 @@ class SerialService:
             if ok:
                 return port
         return None
+
+    def get_fixture_raw_log(self):
+
+        log = []
+
+        log.extend(
+            self.cb_adapter.get_raw_log()
+        )
+
+        log.extend(
+            self.ab_adapter.get_raw_log()
+        )
+
+        return log

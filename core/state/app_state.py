@@ -9,6 +9,8 @@ class AppState:
 
         self.current_sfc = None
 
+        self.project = ""
+
         self.sapme_ready = False
 
         self.sapme_limits = {}
@@ -22,6 +24,8 @@ class AppState:
     def reset(self):
 
         self.current_sfc = None
+
+        self.project = ""
 
         self.sapme_ready = False
 

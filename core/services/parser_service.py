@@ -133,14 +133,27 @@ class ParserService:
         if test_name in [
             "USB3_3 number of port",
             "USB2 number of port",
-            "PCIe number of port"
+            "PCIe number of port",
+            "USB3_2 number of port"
         ]:
             return ParsedResult(
                 status="COMMAND ACCEPT",
                 raw_value=raw_value,
                 data={'message': 'COMMAND ACCEPT'}
             )
-        
+        # ----- USB3 <-> USB2 SWITCH -----
+        if test_name in [
+            "USB3 to USB2",
+            "USB2 to USB3"
+        ]:
+
+            return ParsedResult(
+                status="CONFIGURATION",
+                raw_value=raw_value,
+                data={
+                    "message": "CONFIGURATION"
+                }
+    )
         # ----- UART -----
         if "UART" in test_name:
             uart_result = self._parse_uart(text)
@@ -211,7 +224,32 @@ class ParserService:
                         data={'version': values[0], 'build_date': values[1]},
                         metrics={'version': values[0]}
                     )
-        
+        # ----- CPU INFO -----
+        if "CPU info" in test_name:
+
+            values = raw_value.split("|")
+
+            if len(values) >= 13:
+
+                return ParsedResult(
+                    status="CPUINFO",
+                    raw_value=raw_value,
+                    data={
+                        "vendor_id": values[0],
+                        "cpu_family": values[1],
+                        "model": values[2],
+                        "model_name": values[3],
+                        "cpu_cores": values[4],
+                        "cpu_mhz": values[5],
+                        "cpu_max_mhz": values[6],
+                        "cpu_min_mhz": values[7],
+                        "bogomips": values[8],
+                        "virtualization": values[9],
+                        "l1d_cache": values[10],
+                        "l1i_cache": values[11],
+                        "l2_cache": values[12]
+                    }
+                )       
         # ----- EMMC/SDIO -----
         if test_name in ["EMMC-8bit", "EMMC-4bit", "SDIO"]:
             match = self.RESULT_PATTERN.search(text)
@@ -236,17 +274,41 @@ class ParserService:
         
         # ----- I2C -----
         if "I2C" in test_name:
+
             match = self.RESULT_PATTERN.search(text)
+
             if match:
+
                 values = match.group(1).strip().split("|")
+
                 if len(values) == 2:
+
+                    sensor_match = re.search(
+                        r"I2C_Temperature_(\d+)",
+                        text,
+                        re.IGNORECASE
+                    )
+
+                    sensor = (
+                        int(sensor_match.group(1))
+                        if sensor_match
+                        else -1
+                    )
+
                     return ParsedResult(
                         status="I2C",
                         raw_value=raw_value,
-                        data={'temp_c': values[0], 'temp_f': values[1]},
-                        metrics={'temp_c': float(values[0]), 'temp_f': float(values[1])}
+                        data={
+                            "sensor": sensor,
+                            "temp_c": values[0],
+                            "temp_f": values[1]
+                        },
+                        metrics={
+                            "sensor": sensor,
+                            "temp_c": float(values[0]),
+                            "temp_f": float(values[1])
+                        }
                     )
-        
         # ----- SPI -----
         if "SPI" in test_name:
             match = self.RESULT_PATTERN.search(text)

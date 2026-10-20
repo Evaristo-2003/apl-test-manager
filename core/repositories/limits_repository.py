@@ -3,10 +3,9 @@
 
 import json
 import logging
-from pathlib import Path
 from typing import Any
 from core.state.app_state import app_state
-
+from core.utils.resource_path import resource_path
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +13,10 @@ class LimitsRepository:
     """Carga y consulta límites de pruebas"""
     
     def __init__(self, config_path: str = "limits.json"):
-        self.config_path = Path(config_path)
+        print(resource_path)
+        self.config_path = resource_path(
+    config_path
+)
         self._limits = {}
         self._load()
     
@@ -409,7 +411,6 @@ class LimitsRepository:
             #
             # cursens_12vtoj6
             #
-
             if test_name == "cursens_12vtoj6":
 
                 power = sapme.get(
@@ -417,11 +418,15 @@ class LimitsRepository:
                     {}
                 )
 
-                data = power.get(
+                voltage = power.get(
                     "CURSENS_12VTOJ6_VOLTAGE"
                 )
 
-                if data:
+                current = power.get(
+                    "CURSENS_12VTOJ6_CURRENT"
+                )
+
+                if voltage and current:
 
                     print(
                         "[SAPME] cursens_12vtoj6 solicitado"
@@ -429,17 +434,22 @@ class LimitsRepository:
 
                     return {
                         "voltage_min": float(
-                            data["low"]
+                            voltage["low"]
                         ),
                         "voltage_max": float(
-                            data["high"]
+                            voltage["high"]
+                        ),
+                        "current_min": float(
+                            current["low"]
+                        ),
+                        "current_max": float(
+                            current["high"]
                         )
                     }
 
             #
             # cursens_hsbridge
             #
-
             if test_name == "cursens_hsbridge":
 
                 power = sapme.get(
@@ -447,11 +457,15 @@ class LimitsRepository:
                     {}
                 )
 
-                data = power.get(
+                voltage = power.get(
                     "CURSENS_HSBRIDGE_VOLTAGE"
                 )
 
-                if data:
+                current = power.get(
+                    "CURSENS_HSBRIDGE_CURRENT"
+                )
+
+                if voltage and current:
 
                     print(
                         "[SAPME] cursens_hsbridge solicitado"
@@ -459,10 +473,16 @@ class LimitsRepository:
 
                     return {
                         "voltage_min": float(
-                            data["low"]
+                            voltage["low"]
                         ),
                         "voltage_max": float(
-                            data["high"]
+                            voltage["high"]
+                        ),
+                        "current_min": float(
+                            current["low"]
+                        ),
+                        "current_max": float(
+                            current["high"]
                         )
                     }
             #
@@ -796,3 +816,516 @@ class LimitsRepository:
                     )
 
                     return gpio
+
+            #
+            # I2C
+            #
+            if test_name == "I2C":
+
+                thermal = sapme.get(
+                    "THERMAL",
+                    {}
+                )
+
+                temp = thermal.get(
+                    "12C_TEMPERATURE_0"
+                )
+
+                if temp:
+
+                    return {
+                        "temperature_min": float(
+                            temp["low"]
+                        ),
+                        "temperature_max": float(
+                            temp["high"]
+                        )
+                    }
+
+            #
+            # SMBus
+            #
+            if test_name == "SMBus":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                data = misc.get(
+                    "CHECK SMBUS"
+                )
+
+                if data:
+
+                    print(
+                        "[SAPME] SMBus solicitado"
+                    )
+
+                    return {
+                        "temperature_min": float(
+                            data["low"]
+                        ),
+                        "temperature_max": float(
+                            data["high"]
+                        )
+                    }
+
+            #
+            # LPC
+            #
+            if test_name == "LPC":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                data = misc.get(
+                    "CHECK LPC STATUS"
+                )
+
+                if data:
+
+                    print(
+                        "[SAPME] LPC solicitado"
+                    )
+
+                    return {
+                        "expected_result": str(
+                            data["high"]
+                        )
+                    }
+
+            #
+            # AB Mrcthreshold
+            #
+            if test_name == "AB Mrcthreshold":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                data = misc.get(
+                    "CHECK AB MRCTHRESHOLD"
+                )
+
+                if data:
+
+                    print(
+                        "[SAPME] AB Mrcthreshold solicitado"
+                    )
+
+                    return {
+                        "value_min": float(
+                            data["low"]
+                        ),
+                        "value_max": float(
+                            data["high"]
+                        )
+                    }
+
+            #
+            # DDR Get Result
+            #
+            if test_name == "DDR Get Result":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                status = misc.get(
+                    "CHECK DDR STATUS"
+                )
+
+                value = misc.get(
+                    "DDR VALUE"
+                )
+
+                if status and value:
+
+                    print(
+                        "[SAPME] DDR Get Result solicitado"
+                    )
+
+                    return {
+                        "expected_status": str(
+                            status["high"]
+                        ),
+                        "score_min": float(
+                            value["low"]
+                        ),
+                        "score_max": float(
+                            value["high"]
+                        )
+                    }
+
+            #
+            # Check PCB ID
+            #
+            if test_name == "Check PCB ID":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                data = misc.get(
+                    "CHECK PCB ID"
+                )
+
+                if data:
+
+                    print(
+                        "[SAPME] Check PCB ID solicitado"
+                    )
+
+                    return {
+                        "expected": str(
+                            data["high"]
+                        ).strip().upper()
+                    }
+
+            #
+            # CPU info
+            #
+            if test_name == "CPU info":
+
+                cpu = sapme.get(
+                    "CPU",
+                    {}
+                )
+
+                system = sapme.get(
+                    "SYSTEM",
+                    {}
+                )
+
+                if cpu and system:
+
+                    print(
+                        "[SAPME] CPU info solicitado"
+                    )
+
+                    return {
+                        "vendor_id": str(
+                            system["VENDOR_ID"]["high"]
+                        ).strip().upper(),
+
+                        "cpu_family": str(
+                            int(
+                                float(
+                                    cpu["CPU_FAMILY"]["high"]
+                                )
+                            )
+                        ),
+
+                        "model": str(
+                            int(
+                                float(
+                                    system["MODEL"]["high"]
+                                )
+                            )
+                        ),
+
+                        "model_name": str(
+                            system["MODEL_NAME"]["high"]
+                        ).strip().upper(),
+
+                        "l1d_cache": str(
+                            system["L1D_CACHE"]["high"]
+                        ).strip().upper(),
+
+                        "l1i_cache": str(
+                            system["L1I_CACHE"]["high"]
+                        ).strip().upper(),
+
+                        "l2_cache": str(
+                            system["L2_CACHE"]["high"]
+                        ).strip().upper()
+                    }
+
+            #
+            # Check ABL
+            #
+            if test_name == "Check ABL":
+
+                version = sapme.get(
+                    "VERSION",
+                    {}
+                )
+
+                data = version.get(
+                    "CHECK ABL VERSION"
+                )
+
+                if data:
+
+                    print(
+                        "[SAPME] Check ABL solicitado"
+                    )
+
+                    return {
+                        "expected": str(
+                            data["high"]
+                        ).strip().upper()
+                    }
+
+            #
+            # cursens_ab3v3
+            #
+            if test_name == "cursens_ab3v3":
+
+                power = sapme.get(
+                    "POWER",
+                    {}
+                )
+
+                voltage = power.get(
+                    "CURSENS_AB3V3_VOLTAGE"
+                )
+
+                current = power.get(
+                    "CURSENS_AB3V3_CURRENT"
+                )
+
+                if voltage and current:
+
+                    return {
+                        "voltage_min": float(
+                            voltage["low"]
+                        ),
+                        "voltage_max": float(
+                            voltage["high"]
+                        ),
+                        "current_min": float(
+                            current["low"]
+                        ),
+                        "current_max": float(
+                            current["high"]
+                        )
+                    }
+
+            #
+            # cursens_ab5v
+            #
+            if test_name == "cursens_ab5v":
+
+                power = sapme.get(
+                    "POWER",
+                    {}
+                )
+
+                voltage = power.get(
+                    "CURSENS_AB5V_VOLTAGE"
+                )
+
+                current = power.get(
+                    "CURSENS_AB5V_CURRENT"
+                )
+
+                if voltage and current:
+
+                    return {
+                        "voltage_min": float(
+                            voltage["low"]
+                        ),
+                        "voltage_max": float(
+                            voltage["high"]
+                        ),
+                        "current_min": float(
+                            current["low"]
+                        ),
+                        "current_max": float(
+                            current["high"]
+                        )
+                    }
+
+            #
+            # cursens_12vtoab
+            #
+            if test_name == "cursens_12vtoab":
+
+                power = sapme.get(
+                    "POWER",
+                    {}
+                )
+
+                voltage = power.get(
+                    "CURSENS_12VTOAB_VOLTAGE"
+                )
+
+                current = power.get(
+                    "CURSENS_12VTOAB_CURRENT"
+                )
+
+                if voltage and current:
+
+                    return {
+                        "voltage_min": float(
+                            voltage["low"]
+                        ),
+                        "voltage_max": float(
+                            voltage["high"]
+                        ),
+                        "current_min": float(
+                            current["low"]
+                        ),
+                        "current_max": float(
+                            current["high"]
+                        )
+                    }
+
+            #
+            # SDIO
+            #
+            if test_name == "SDIO":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                bw = misc.get(
+                    "SDIO_BUS_WIDTH"
+                )
+
+                clk = misc.get(
+                    "SDIO_ACTUAL_CLOCK"
+                )
+
+                timing = misc.get(
+                    "SDIO_TIMING_SPEC"
+                )
+
+                if bw and clk and timing:
+
+                    print(
+                        "[SAPME] SDIO solicitado"
+                    )
+
+                    return {
+                        "result": "PASS",
+                        "bus_width": str(
+                            int(bw["low"])
+                        ),
+                        "clock": str(
+                            int(clk["low"])
+                        ),
+                        "timing": str(
+                            int(timing["low"])
+                        )
+                    }
+
+            #
+            # AB Erase DID
+            #
+            if test_name == "AB Erase DID":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                data = misc.get(
+                    "CHECKERASEDIDRESULT"
+                )
+
+                if data:
+
+                    print(
+                        "[SAPME] AB Erase DID solicitado"
+                    )
+
+                    return {
+                        "expected_result": str(
+                            data["actual"]
+                        ).strip().upper()
+                    }
+
+            #
+            # SATA Get Port 1
+            #
+            if test_name == "SATA Get port 1":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                data = misc.get(
+                    "GET SATA PORT1 VALUE"
+                )
+
+                if data:
+
+                    return {
+                        "expected_result": str(
+                            data["high"]
+                        ).strip().upper()
+                    }
+
+            #
+            # SATA Get Port 2
+            #
+            if test_name == "SATA Get Port 2":
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                data = misc.get(
+                    "GET SATA PORT 2 RESULT"
+                )
+
+                if data:
+
+                    return {
+                        "expected_result": str(
+                            data["high"]
+                        ).strip().upper()
+                    }
+
+            #
+            # Number of Port
+            #
+            if test_name in [
+                "USB3_3 number of port",
+                "USB2 number of port",
+                "PCIe number of port",
+                "USB3_2 number of port"
+            ]:
+
+                misc = sapme.get(
+                    "MISC",
+                    {}
+                )
+
+                data = misc.get(
+                    "USB3.0_2.0 CHECK THE NUMBER OF"
+                )
+
+                if data:
+
+                    print(
+                        f"[SAPME] {test_name} solicitado"
+                    )
+
+                    return {
+                        "expected_result": str(
+                            data["high"]
+                        ).strip().upper()
+                    }
+            #
+            # Configuration USB
+            #
+            if test_name in [
+                "USB3 to USB2",
+                "USB2 to USB3"
+            ]:
+                return {
+                    "expected_result": "CONFIGURATION"
+                }

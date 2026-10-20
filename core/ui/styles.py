@@ -201,7 +201,7 @@ class AppStyles:
 
     RUN_ALL_BUTTON = """
         QPushButton {
-            background-color: #1565C0;
+            background-color: #2D3748;
             color: white;
             font-size: 14px;
             font-weight: bold;
@@ -210,7 +210,7 @@ class AppStyles:
         }
 
         QPushButton:hover {
-            background-color: #1976D2;
+            background-color: #4A5568;
         }
 
         QPushButton:pressed {
@@ -223,24 +223,164 @@ class AppStyles:
     # ----------------------------------
 
     GROUP_HEADER = """
-        QPushButton {
-            text-align: left;
-            font-size: 14px;
-            font-weight: bold;
-            padding: 8px;
-            background-color: #2D3748;
-            color: white;
-            border-radius: 6px;
-        }
+    QPushButton {
 
-        QPushButton:hover {
-            background-color: #4A5568;
-        }
+        background-color: #2D3748;
+        color: white;
+
+        border: 1px solid #1A202C;
+        border-radius: 0px;
+
+        font-family: 'Segoe UI';
+        font-size: 9pt;
+        font-weight: 500;
+
+        padding: 4px 10px;
+
+        text-align: left;
+    }
+
+    QPushButton:hover {
+
+        background-color: #4A5568;
+    }
+
+    QPushButton:pressed {
+
+        background-color: #1A202C;
+    }
+    """
+    RUN_ALL_BUTTON = """
+    QPushButton {
+
+        background-color: #2D3748;
+        color: white;
+
+        border: 1px solid #1A202C;
+        border-radius: 0px;
+
+        font-family: 'Segoe UI';
+        font-size: 9pt;
+        font-weight: 500;
+
+        padding: 4px 10px;
+    }
+
+    QPushButton:hover {
+
+        background-color: #4A5568;
+    }
+
+    QPushButton:pressed {
+
+        background-color: #1A202C;
+    }
+
+    QPushButton:disabled {
+
+        background-color: #9CA3AF;
+        color: #E5E7EB;
+    }
+    """
+    FIXTURE_BUTTON_NOT_CONNECTED = """
+    QPushButton {
+
+        background-color: #6B7280;
+        color: white;
+
+        border: 1px solid #1A202C;
+        border-radius: 0px;
+
+        font-family: 'Segoe UI';
+        font-size: 9pt;
+        font-weight: 500;
+
+        padding: 4px 10px;
+    }
+    """
+
+    FIXTURE_BUTTON_CONNECTING = """
+    QPushButton {
+
+        background-color: #F59E0B;
+        color: white;
+
+        border: 1px solid #1A202C;
+        border-radius: 0px;
+
+        font-family: 'Segoe UI';
+        font-size: 9pt;
+        font-weight: 500;
+
+        padding: 4px 10px;
+    }
+    """
+
+    FIXTURE_BUTTON_READY = """
+    QPushButton {
+
+        background-color: #16A34A;
+        color: white;
+
+        border: 1px solid #1A202C;
+        border-radius: 0px;
+
+        font-family: 'Segoe UI';
+        font-size: 9pt;
+        font-weight: 500;
+
+        padding: 4px 10px;
+    }
+    """
+
+
+    FIXTURE_BUTTON_FAILED = """
+    QPushButton {
+
+        background-color: #DC2626;
+        color: white;
+
+        border: 1px solid #1A202C;
+        border-radius: 0px;
+
+        font-family: 'Segoe UI';
+        font-size: 9pt;
+        font-weight: 500;
+
+        padding: 4px 10px;
+    }
+    """
+
+    ANALYSIS_BUTTON = """
+    QPushButton {
+
+        background-color: #2D3748;
+        color: white;
+
+        border: 1px solid #1A202C;
+        border-radius: 0px;
+
+        font-family: 'Segoe UI';
+        font-size: 9pt;
+        font-weight: 500;
+
+        padding: 4px 10px;
+    }
+
+    QPushButton:hover {
+
+        background-color: #4A5568;
+    }
+
+    QPushButton:pressed {
+
+        background-color: #1A202C;
+    }
     """
 
     DASHBOARD_RUN_ALL_BUTTON = """
         QPushButton {
-            background-color: #2E7D32;
+            background-color: #2D3748;
             color: white;
             font-size: 14px;
             font-weight: bold;
@@ -249,11 +389,11 @@ class AppStyles:
         }
 
         QPushButton:hover {
-            background-color: #388E3C;
+            background-color: #4A5568;
         }
 
         QPushButton:pressed {
-            background-color: #1B5E20;
+            background-color: #0D47A1;
         }
 
         QPushButton:disabled {

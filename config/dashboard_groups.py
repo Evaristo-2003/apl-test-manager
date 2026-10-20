@@ -47,14 +47,27 @@ DASHBOARD_GROUPS = {
     ],
 
     "USB - PCIE": [
+
+        # PCIE
         "PCIe number of port",
         "PCIe Iperf Test",
+
+        # USB3
         "USB3_3 number of port",
         "USB3_3 Iperf Test",
+
+        "USB3_2 number of port",
+        "USB3_2 Iperf Test",
+
+        # Cambio de modo
+        "USB3 to USB2",
+
+        # USB2
         "USB2 number of port",
         "USB2 Iperf Test",
-        "USB3->USB2",
-        "USB3_2 Iperf Test",
+
+        # Regreso
+        "USB2 to USB3",
     ],
 
     "Multimedia": [

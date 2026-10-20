@@ -18,7 +18,9 @@ class CollapsibleGroup(QWidget):
         self.btn_toggle = QPushButton(
             f"▼ {title}"
         )
-
+        self.btn_toggle.setFixedWidth(
+            350
+        )
         self.btn_toggle.setCursor(
             Qt.PointingHandCursor
         )
@@ -32,9 +34,10 @@ class CollapsibleGroup(QWidget):
         self.btn_toggle.setStyleSheet(
             AppStyles.GROUP_HEADER
         )
-
+        
         self.main_layout.addWidget(
-            self.btn_toggle
+            self.btn_toggle,
+            alignment=Qt.AlignCenter
         )
 
         self.content = QWidget()

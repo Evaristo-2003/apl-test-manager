@@ -13,25 +13,39 @@ def convert_value(value):
 
     value = value.strip()
 
-    gpio_patterns = (
-        "111111",
-        "000000"
-    )
+    #
+    # GPIO bit patterns
+    # Ejemplos:
+    # 1111111111111101
+    # 0000010000
+    # 0111111111111111
+    #
+    if (
+        len(value) >= 4
+        and
+        set(value).issubset(
+            {"0", "1"}
+        )
+    ):
+        return value
 
-    for pattern in gpio_patterns:
-
-        if value.startswith(pattern):
-            return value
-
+    #
+    # Version strings
+    #
     if "VER:" in value.upper():
         return value
 
     try:
+
         return float(
-            value.replace(",", ".")
+            value.replace(
+                ",",
+                "."
+            )
         )
 
     except Exception:
+
         return value
 
 
@@ -215,11 +229,24 @@ def parse_parametrics(
 
     html = data_node.text
 
+    with open(
+        "sapme_page.html",
+        "w",
+        encoding="utf-8"
+    ) as f:
+        f.write(html)
     soup = BeautifulSoup(
         html,
         "html.parser"
     )
 
+
+    page_text = soup.get_text("\n")
+
+ 
+
+
+    print("=" * 80)
     table = soup.find(
         "table",
         {"id": "dcTable"}
@@ -254,7 +281,7 @@ def parse_parametrics(
 
         if len(cols) < 13:
             continue
-
+        material_rev = cols[2]
         test_step = cols[5]
         description = cols[6]
         status = cols[8]
@@ -342,5 +369,7 @@ def parse_parametrics(
         grouped["USB3_3"] = normalize_usb(
             grouped["USB3_3"]
         )
-
+        grouped["_TRACEABILITY"] = {
+            "material_rev": material_rev
+        }
     return grouped

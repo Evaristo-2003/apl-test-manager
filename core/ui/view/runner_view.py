@@ -17,7 +17,7 @@ class RunnerView:
 
     @staticmethod
     def create(
-        serial_service,
+        fixture_controller,
         button_repo,
         test_controller,
         log_callback,
@@ -25,7 +25,6 @@ class RunnerView:
         run_selected_callback,
         run_all_callback
     ):
-
         tab = QWidget()
         layout = QVBoxLayout(tab)
 
@@ -33,8 +32,7 @@ class RunnerView:
         # Fixture Control
         #
         fixture_widget = FixtureControlWidget(
-            serial_service,
-            log_callback
+            fixture_controller
         )
 
         layout.addWidget(

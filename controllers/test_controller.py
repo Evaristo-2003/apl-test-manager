@@ -21,10 +21,36 @@ class TestController:
         self.test_results = {}
         self.test_status = {}
 
+        # USB FLOW CONTROL
+        self.completed_tests = set()
+        self.usb3_tests_completed = False
+        self.usb_mode = "USB3"
+
     def start_test(self, test_name):
 
         button = self.button_repo.get_by_label(test_name)
 
+        #
+        # USB2 requiere modo USB2
+        #
+        if test_name in [
+
+            "USB2 number of port",
+            "USB2 Iperf Test"
+
+        ]:
+
+            if self.usb_mode != "USB2":
+
+                self.log(
+                    "⚠️ Primero ejecute:"
+                )
+
+                self.log(
+                    "USB3 to USB2"
+                )
+
+                return
         if not button:
             self.log(f"❌ Botón no encontrado: {test_name}")
             return
@@ -49,7 +75,45 @@ class TestController:
         self.test_results[result.test_name] = result
         self.test_status[result.test_name] = result.status
 
+
+
+        #
+        # Cambio a USB2
+        #
+        if (
+            result.test_name == "USB3 to USB2"
+            and
+            result.status == "PASS"
+        ):
+
+            self.usb_mode = "USB2"
+
+            self.log(
+                "✅ USB MODE = USB2"
+            )
+
+        #
+        # Regreso a USB3
+        #
+        if (
+            result.test_name == "USB2 to USB3"
+            and
+            result.status == "PASS"
+        ):
+
+            self.usb_mode = "USB3"
+
+
+
+            self.log(
+                "✅ USB MODE = USB3"
+            )
+
+        #
+        # ESTO SIEMPRE DEBE EJECUTARSE
+        #
         self.update_dashboard()
+
         self.show_result(result)
 
         if result.test_name == "All sequence":
@@ -60,6 +124,7 @@ class TestController:
             self.log(f"Estado: {result.status}")
 
             for metric in result.metrics:
+
                 self.log(
                     f"{metric.name}: {metric.value}"
                 )

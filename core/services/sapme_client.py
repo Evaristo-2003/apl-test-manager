@@ -100,7 +100,67 @@ class SapMeClient:
             f.write(login_response.text)
 
         return login_response
+    
+    def get_sfc_status(self, sfc):
 
+        print("\n[STATUS] Calling getSFCStatus...")
+
+        url = (
+            f"{BASE_URL}"
+            "/XMII/Runner"
+            "?transaction=REPORTING15/lifecycle/getSFCStatus"
+            f"&in_sfc={sfc}"
+            "&OutputParameter=xml_output"
+            "&in_user=report_user"
+        )
+
+        response = self.session.get(
+            url,
+            verify=False,
+            timeout=60
+        )
+
+        print(f"STATUS: {response.status_code}")
+
+        with open(
+            "sfc_status.xml",
+            "w",
+            encoding="utf-8"
+        ) as f:
+            f.write(response.text)
+
+        return response.text
+    def get_sfc_asbuild(self, sfc):
+
+        print("\n[ASBUILD] Calling getSfcAsBuild...")
+
+        url = (
+            f"{BASE_URL}"
+            "/XMII/Runner"
+            "?transaction=REPORTING15/lifecycle/getSfcAsBuild"
+            f"&in_sfc={sfc}"
+            "&OutputParameter=xml_output"
+            "&in_user=report_user"
+        )
+
+        response = self.session.get(
+            url,
+            verify=False,
+            timeout=60
+        )
+
+        print(
+            f"ASBUILD Status: {response.status_code}"
+        )
+
+        with open(
+            "sfc_asbuild.xml",
+            "w",
+            encoding="utf-8"
+        ) as f:
+            f.write(response.text)
+
+        return response.text
     def get_fct_page(self, sfc):
 
         print("\n[3] Loading FCT report...")
@@ -118,7 +178,8 @@ class SapMeClient:
             verify=False,
             timeout=30
         )
-
+        print(response.url)
+        print(response.history)
         print(
             f"FCT Status: {response.status_code}"
         )
@@ -133,7 +194,12 @@ class SapMeClient:
             encoding="utf-8"
         ) as f:
             f.write(response.text)
-
+        with open(
+            "fct_page_full.html",
+            "w",
+            encoding="utf-8"
+        ) as f:
+            f.write(response.text)
         return response
 
     def get_report_js(self):
@@ -239,7 +305,8 @@ def main():
     fct = client.get_fct_page(
         SFC
     )
-
+    print("\nFIRST 5000 CHARS OF FCT PAGE\n")
+    print(fct.text[:5000])
     print(
         "\ndcTable Found:",
         "dcTable" in fct.text

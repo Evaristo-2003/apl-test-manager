@@ -3,13 +3,13 @@
 
 import json
 from pathlib import Path
-
+from core.utils.resource_path import resource_path
 
 class ButtonRepository:
     """Carga y consulta configuración de botones"""
     
     def __init__(self, config_path: str = "buttons.json"):
-        self.config_path = Path(config_path)
+        self.config_path = resource_path(config_path)
         self._buttons = None
         self._buttons_by_label = {}
         self._load()

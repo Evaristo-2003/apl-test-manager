@@ -2,7 +2,7 @@
 """Indicador de estado con colores"""
 
 from PySide6.QtWidgets import QLabel
-
+from PySide6.QtCore import Qt
 
 class StatusIndicator(QLabel):
     """Indicador visual de estado"""
@@ -21,13 +21,34 @@ class StatusIndicator(QLabel):
         self.set_status(initial_status)
     
     def set_status(self, status: str):
-        """Actualiza el estado"""
+
         self._status = status
-        color = self.COLORS.get(status, "#F1F0EC")
-        self.setText(status)
-        self.setStyleSheet(f"""
-            background: {color};
-            border: 2px solid black;
-            padding: 8px;
-            font-weight: bold;
+
+        styles = {
+
+            "NOT CONNECTED": "⚫ NOT CONNECTED",
+            "CONNECTING": "🟡 CONNECTING",
+            "READY": "🟢 READY",
+            "FAILED": "🔴 FAILED",
+            "RUNNING": "🟠 RUNNING",
+        }
+
+        self.setText(
+            styles.get(status, status)
+        )
+
+        self.setAlignment(Qt.AlignCenter)
+
+        self.setStyleSheet("""
+            QLabel {
+                background-color: #F8F8F8;
+                color: black;
+                border-radius: 6px;
+                border: 1px solid #C0C0C0;
+                padding: 6px 12px;
+                font-weight: bold;
+            }
         """)
+    @property
+    def current_status(self):
+        return self._status

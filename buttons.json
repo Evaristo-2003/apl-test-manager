@@ -274,7 +274,7 @@
         }
     },
     {
-        "label": "USB3->USB2",
+        "label": "USB3 to USB2",
         "action": {
             "type": "single",
             "cmd": "websocket_test.sh usb3 usb3tousb2 1",

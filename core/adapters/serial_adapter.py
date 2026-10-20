@@ -3,7 +3,7 @@
 
 import logging
 import time
-
+import threading
 import serial
 from serial.tools import list_ports
 
@@ -18,7 +18,8 @@ class SerialAdapter:
         self.timeout = timeout
         self._serial = None
         self._port = None
-    
+        self.raw_log = []
+
     @staticmethod
     def get_available_ports() -> list:
         """Obtiene lista de puertos COM disponibles"""
@@ -61,6 +62,9 @@ class SerialAdapter:
         
         try:
             self._serial.write((command + "\r\n").encode("utf-8"))
+            self.raw_log.append(
+                f"[TX] {command}"
+            )           
             self._serial.flush()
             return True
         except Exception as e:
@@ -75,7 +79,7 @@ class SerialAdapter:
         timeout = timeout or self.timeout
         response = ""
         start_time = time.time()
-        
+       
         try:
             while self._serial.in_waiting or (time.time() - start_time) < timeout:
                 if self._serial.in_waiting:
@@ -83,7 +87,13 @@ class SerialAdapter:
                 time.sleep(0.01)
         except Exception as e:
             logger.error(f"Error leyendo datos: {e}")
-        
+        if response.strip():
+
+            self.raw_log.append(
+                f"[RX] {response.strip()}"
+            )
+
+  
         return response
     
     def execute_command(self, command: str, wait_time: float = 2.0) -> str:
@@ -124,7 +134,11 @@ class SerialAdapter:
                     break
                 
                 time.sleep(0.05)
-            
+            if response.strip():
+
+                self.raw_log.append(
+                    f"[RX] {response.strip()}"
+                )            
             return response
         except Exception as e:
             logger.error(f"Error ejecutando comando: {e}")
@@ -154,3 +168,8 @@ class SerialAdapter:
     @property
     def port(self) -> str | None:
         return self._port
+
+    def get_raw_log(self):
+
+        return self.raw_log.copy()
+    

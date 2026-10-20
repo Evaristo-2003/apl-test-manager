@@ -257,8 +257,50 @@ class TestService:
             r['response'] for r in results
         )
 
+        serializable_steps = []
+
+        for step in results:
+
+            parsed = step.get("parsed")
+            verification = step.get("verification")
+
+            serializable_steps.append({
+
+                "cmd": step.get(
+                    "cmd",
+                    ""
+                ),
+
+                "response": step.get(
+                    "response",
+                    ""
+                ),
+
+                "parsed": (
+                    {
+                        "status": parsed.status,
+                        "raw_value": parsed.raw_value,
+                        "data": parsed.data,
+                        "metrics": parsed.metrics
+                    }
+                    if parsed
+                    else {}
+                ),
+
+                "verification": (
+                    {
+                        "status": verification.status,
+                        "message": verification.message,
+                        "details": verification.details
+                    }
+                    if verification
+                    else {}
+                )
+
+            })
+
         result.parsed_data = {
-            'steps': results
+            "steps": serializable_steps
         }
         if button["label"] == "ADC":
 

@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QProgressBar
 )
+from config import dashboard_groups
 from core.ui.styles import AppStyles
 from core.ui.widgets.fixture_control_widget import (
     FixtureControlWidget
@@ -24,7 +25,7 @@ class DashboardView:
         test_controller,
         button_repo,
         log_callback,
-        serial_service
+        fixture_controller
     ):
 
         (
@@ -36,10 +37,10 @@ class DashboardView:
             view_result_callback
         )
         run_all_button = QPushButton(
-            "▶ RUN ALL DASHBOARD TESTS"
+            "RUN ALL TESTS"
         )
         run_all_button.setStyleSheet(
-            AppStyles.DASHBOARD_RUN_ALL_BUTTON
+            AppStyles.RUN_ALL_BUTTON
         )
         run_all_button.setCursor(
             Qt.PointingHandCursor
@@ -60,8 +61,13 @@ class DashboardView:
 
         progress_bar = QProgressBar()
         fixture_widget = FixtureControlWidget(
-            serial_service,
-            log_callback
+            fixture_controller,
+            run_all_button,
+            lambda text: DashboardBuilder.filter_cards(
+                text,
+                dashboard_cards,
+                dashboard_groups
+            )
         )
         progress_bar.setMinimum(0)
         progress_bar.setMaximum(100)
@@ -73,10 +79,10 @@ class DashboardView:
         layout = QVBoxLayout(container)
         
         layout.addWidget(fixture_widget)
-        layout.addWidget(summary_label)
-        layout.addWidget(progress_bar)
+#        layout.addWidget(summary_label)
+#        layout.addWidget(progress_bar)
         layout.addWidget(dashboard_widget)
-        layout.addWidget(run_all_button)
+      
 
         # Controller
         controller = DashboardController(
