@@ -1,4 +1,1 @@
-websocket_test.sh cbhw
-cb ver:G
-root@dra7xx-evm:~# 
-root@dra7xx-evm:~# 
+NOT CONNECTED

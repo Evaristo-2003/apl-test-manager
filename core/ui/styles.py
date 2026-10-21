@@ -27,12 +27,10 @@ class AppStyles:
         }
 
         QPushButton {
-            background: #2196F3;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            font-weight: bold;
+            border-radius: 0px;
+            font-family: 'Segoe UI';
+            font-size: 9pt;
+            font-weight: 500;
         }
 
         QPushButton:hover {

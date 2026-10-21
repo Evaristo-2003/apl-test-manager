@@ -10,18 +10,18 @@ class TestCard(QPushButton):
     rightClicked = Signal(str) 
     # Colores por estado
     COLORS = {
-        "NOT_RUN": "#F1F0EC",
-        "RUNNING": "#FFC107",
-        "PASS": "#4CAF50",
-        "FAIL": "#F44336",
-        "WARNING": "#FF9800"
+        "NOT_RUN": "#F5F5F5",
+        "RUNNING": "#FFE699",
+        "PASS": "#C6EFCE",
+        "FAIL": "#FFC7CE",
+        "WARNING": "#FFE699"
     }
     
     def __init__(self, test_name: str, parent=None):
         super().__init__(parent)
         self.test_name = test_name
         self._status = "NOT_RUN"
-        self.setFixedSize(180, 100)
+        self.setFixedSize(170, 80)
         self.setCursor(Qt.PointingHandCursor)
         self.update_display()
     
@@ -32,23 +32,42 @@ class TestCard(QPushButton):
     
     def update_display(self):
         """Actualiza la apariencia de la tarjeta"""
-        color = self.COLORS.get(self._status, "#F1F0EC")
-        self.setText(f"{self.test_name}\n\n{self._status}")
+
+        color = self.COLORS.get(
+            self._status,
+            "#F1F0EC"
+        )
+
+        self.setText(
+            f"{self.test_name}\n\n{self._status}"
+        )
+
         self.setStyleSheet(f"""
             QPushButton {{
-                background: {color};
-                color: black;
-                border: 2px solid black;
-                border-radius: 12px;
-                padding: 20px;
-                font-size: 12px;
-                font-weight: bold;
+
+                background-color: {color};
+
+                color: #202020;
+
+                border: 1px solid #2D3748;
+                border-radius: 0px;
+
+                font-family: "Segoe UI";
+                font-size: 9pt;
+                font-weight: 500;
+
+                padding: 6px;
+                text-align: center;
             }}
+
             QPushButton:hover {{
-                border: 3px solid #0078d7;
+
+                border: 2px solid #3182CE;
             }}
+
             QPushButton:pressed {{
-                background: #d6ebff;
+
+                background-color: #DDEAF2;
             }}
         """)
 

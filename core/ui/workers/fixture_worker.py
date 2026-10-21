@@ -8,7 +8,10 @@ from PySide6.QtCore import (
 class FixtureSignals(QObject):
 
     finished = Signal(bool)
+
     error = Signal(str)
+
+    status = Signal(str)
 
 
 class FixtureWorker(QRunnable):

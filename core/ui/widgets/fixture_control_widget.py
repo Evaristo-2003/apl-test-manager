@@ -61,10 +61,6 @@ class FixtureControlWidget(QWidget):
         )
 
 
-        
-        self.btn_connect.setStyleSheet(
-            AppStyles.CONNECT_BUTTON
-        )
 
 
 

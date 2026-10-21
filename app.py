@@ -665,7 +665,9 @@ class MainWindow(QMainWindow):
 
     def _create_analysis_tab(self):
 
-        self.analysis_view = AnalysisView()
+        self.analysis_view = AnalysisView(
+            self.fixture_controller
+        )
 
         self.analysis_view.btn_refresh_ports.clicked.connect(
             self.refresh_analysis_ports
