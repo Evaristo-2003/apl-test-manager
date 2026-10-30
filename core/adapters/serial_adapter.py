@@ -24,7 +24,52 @@ class SerialAdapter:
     def get_available_ports() -> list:
         """Obtiene lista de puertos COM disponibles"""
         return [port.device for port in list_ports.comports()]
-    
+    @staticmethod
+    def get_usb_serial_ports() -> list:
+        """
+        Obtiene solo puertos USB Serial (excluye Bluetooth, Intel AMT, etc.).
+        
+        Returns:
+            Lista de nombres de puertos (ej: ['COM19', 'COM21'])
+        """
+        from serial.tools import list_ports
+        
+        EXCLUDED_KEYWORDS = [
+            "bluetooth",
+            "intel(r) active management",
+            "intel amt",
+            "standard serial over",
+            "z+ serial",
+            "modem",
+            "virtual",
+            "diagnostic",
+        ]
+        
+        INCLUDED_KEYWORDS = [
+            "usb serial",
+            "usb-serial",
+            "usb to serial",
+            "ftdi",
+            "cp210",
+            "ch340",
+            "pl2303",
+            "prolific",
+        ]
+        
+        valid = []
+        
+        for port in list_ports.comports():
+            desc = (port.description or "").lower()
+            
+            # Si coincide con algún excluido → skip
+            if any(kw in desc for kw in EXCLUDED_KEYWORDS):
+                continue
+            
+            # Si coincide con algún incluido → agregar
+            if any(kw in desc for kw in INCLUDED_KEYWORDS):
+                valid.append(port.device)
+        
+        return valid
     def connect(self, port: str) -> bool:
         """Conecta a un puerto serial"""
         try:
@@ -133,7 +178,7 @@ class SerialAdapter:
                     response += self.read_data()
                     break
                 
-                time.sleep(0.05)
+                time.sleep(0.01)
             if response.strip():
 
                 self.raw_log.append(

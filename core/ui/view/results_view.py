@@ -10,7 +10,9 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QTextBrowser
 )
-
+from PySide6.QtCore import Qt
+from core.ui.styles import AppStyles
+ 
 
 class ResultsView(QWidget):
 
@@ -117,61 +119,25 @@ class ResultsView(QWidget):
             preview_layout
         )
 
-        #
-        # Export Button
-        #
-        self.btn_export = QPushButton(
-            "EXPORT RESULTS"
-        )
-        self.btn_export.setStyleSheet("""
-        QPushButton {
-
-            background-color: #2D3748;
-            color: white;
-
-            border: none;
-            border-radius: 0px;
-
-            padding: 8px 16px;
-
-            font-family: 'Segoe UI';
-            font-size: 10pt;
-            font-weight: 600;
-        }
-
-        QPushButton:hover {
-
-            background-color: #4A5568;
-        }
-
-        QPushButton:pressed {
-
-            background-color: #1A202C;
-        }
-
-        QPushButton:disabled {
-
-            background-color: #B0B0B0;
-            color: #E0E0E0;
-        }
-        """)
-        layout.addWidget(
-            self.btn_export
-        )
-        self.btn_export.setFixedWidth(
-            180
-        )
+        # =====================================
+        # EXPORT BUTTON
+        # =====================================
+        
+        self.btn_export = QPushButton("EXPORT RESULTS")
+        self.btn_export.setStyleSheet(AppStyles.EXPORT_RESULTS_BUTTON)
+        self.btn_export.setFixedWidth(180)
+        self.btn_export.setFixedHeight(36) # Altura fija para mantener simetría
+        self.btn_export.setCursor(Qt.PointingHandCursor) # Manito al pasar el mouse
+ 
+        # Layout para centrar el botón
         button_layout = QHBoxLayout()
-
         button_layout.addStretch()
-        button_layout.addWidget(
-            self.btn_export
-        )
+        button_layout.addWidget(self.btn_export)
         button_layout.addStretch()
-
-        layout.addLayout(
-            button_layout
-        )
+ 
+        # Agregar al layout principal (no lo agregues suelto y luego en el HBox)
+        layout.addLayout(button_layout)
+ 
         #
         # Preview Browser
         #

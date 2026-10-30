@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Generador de reporte HTML"""
 
 import base64
-import json
-from datetime import datetime
-from core.state.app_state import app_state
 import re
-from pathlib import Path
+from datetime import datetime
 
+from core.state.app_state import app_state
 from core.utils.resource_path import resource_path
-class HtmlReportBuilder:
-    @staticmethod
-    def render_pwm_table(
-        rows
-    ):
 
+
+class HtmlReportBuilder:
+    """Constructor de reporte HTML"""
+
+    @staticmethod
+    def render_pwm_table(rows):
         html = """
 <div class="subsequence-title">
 PWM Configuration
@@ -28,29 +29,14 @@ PWM Configuration
 <th>Result</th>
 </tr>
 """
-
         for row in rows:
-
-            css_result = (
-                "pass"
-                if row["result"] == "PASS"
-                else "fail"
-            )
-
+            css_result = "pass" if row["result"] == "PASS" else "fail"
             html += f"""
 <tr>
-
-<td>
-{row["command"]}
-</td>
-
-<td class="{css_result}">
-{row["result"]}
-</td>
-
+<td>{row["command"]}</td>
+<td class="{css_result}">{row["result"]}</td>
 </tr>
 """
-
         html += """
 </table>
 
@@ -58,12 +44,10 @@ PWM Configuration
 
 <br>
 """
-
         return html
-    def render_gpio_table(
-        rows
-    ):
 
+    @staticmethod
+    def render_gpio_table(rows):
         html = """
 <div class="subsequence-title">
 GPIO Verification
@@ -80,37 +64,16 @@ GPIO Verification
 <th>Result</th>
 </tr>
 """
-
         for row in rows:
-
-            css_result = (
-                "pass"
-                if row["result"] == "PASS"
-                else "fail"
-            )
-
+            css_result = "pass" if row["result"] == "PASS" else "fail"
             html += f"""
 <tr>
-
-<td>
-{row["pattern"]}
-</td>
-
-<td>
-{row["expected"]}
-</td>
-
-<td>
-{row["actual"]}
-</td>
-
-<td class="{css_result}">
-{row["result"]}
-</td>
-
+<td>{row["pattern"]}</td>
+<td>{row["expected"]}</td>
+<td>{row["actual"]}</td>
+<td class="{css_result}">{row["result"]}</td>
 </tr>
 """
-
         html += """
 </table>
 
@@ -118,25 +81,14 @@ GPIO Verification
 
 <br>
 """
-
         return html
-    def render_i2s_table(
-        rows
-    ):
 
-        html = (
-            HtmlReportBuilder
-            .render_subsequence_table(
-                "I2S Verification",
-                rows
-            )
-        )
+    @staticmethod
+    def render_i2s_table(rows):
+        return HtmlReportBuilder.render_subsequence_table("I2S Verification", rows)
 
-        return html
-    def render_spi_table(
-        rows
-    ):
-
+    @staticmethod
+    def render_spi_table(rows):
         html = """
 <div class="subsequence-title">
 SPI Device Verification
@@ -153,37 +105,16 @@ SPI Device Verification
 <th>Result</th>
 </tr>
 """
-
         for row in rows:
-
-            css_result = (
-                "pass"
-                if row["result"] == "PASS"
-                else "fail"
-            )
-
+            css_result = "pass" if row["result"] == "PASS" else "fail"
             html += f"""
 <tr>
-
-<td>
-{row["device"]}
-</td>
-
-<td>
-{row["expected"]}
-</td>
-
-<td>
-{row["actual"]}
-</td>
-
-<td class="{css_result}">
-{row["result"]}
-</td>
-
+<td>{row["device"]}</td>
+<td>{row["expected"]}</td>
+<td>{row["actual"]}</td>
+<td class="{css_result}">{row["result"]}</td>
 </tr>
 """
-
         html += """
 </table>
 
@@ -191,13 +122,10 @@ SPI Device Verification
 
 <br>
 """
-
         return html
-    
-    def render_i2c_table(
-        rows
-    ):
 
+    @staticmethod
+    def render_i2c_table(rows):
         html = """
 <div class="subsequence-title">
 I2C Temperature Sensors
@@ -215,41 +143,17 @@ I2C Temperature Sensors
 <th>Result</th>
 </tr>
 """
-
         for row in rows:
-
-            css_result = (
-                "pass"
-                if row["result"] == "PASS"
-                else "fail"
-            )
-
+            css_result = "pass" if row["result"] == "PASS" else "fail"
             html += f"""
 <tr>
-
-<td>
-{row["sensor"]}
-</td>
-
-<td>
-{row["low"]}
-</td>
-
-<td>
-{row["actual"]}
-</td>
-
-<td>
-{row["high"]}
-</td>
-
-<td class="{css_result}">
-{row["result"]}
-</td>
-
+<td>{row["sensor"]}</td>
+<td>{row["low"]}</td>
+<td>{row["actual"]}</td>
+<td>{row["high"]}</td>
+<td class="{css_result}">{row["result"]}</td>
 </tr>
 """
-
         html += """
 </table>
 
@@ -257,18 +161,14 @@ I2C Temperature Sensors
 
 <br>
 """
-
         return html
-    def render_mmc_info_table(
-        title,
-        data
-    ):
 
+    @staticmethod
+    def render_mmc_info_table(title, data):
         html = f"""
 <div class="subsequence-title">
 {title}
 </div>
-
 
 <div class="subsequence-content">
 
@@ -279,29 +179,14 @@ I2C Temperature Sensors
 <th>Value</th>
 </tr>
 """
-
         for key, value in data.items():
-
-            friendly_name = (
-                key
-                .replace("_", " ")
-                .title()
-            )
-
+            friendly_name = key.replace("_", " ").title()
             html += f"""
 <tr>
-
-<td>
-{friendly_name}
-</td>
-
-<td>
-{value}
-</td>
-
+<td>{friendly_name}</td>
+<td>{value}</td>
 </tr>
 """
-
         html += """
 </table>
 
@@ -309,12 +194,10 @@ I2C Temperature Sensors
 
 <br>
 """
-
         return html
-    def render_cpu_info_table(
-        data
-    ):
 
+    @staticmethod
+    def render_cpu_info_table(data):
         html = """
 <div class="subsequence-title">
 CPU Information
@@ -329,29 +212,14 @@ CPU Information
 <th>Value</th>
 </tr>
 """
-
         for key, value in data.items():
-
-            friendly_name = (
-                key
-                .replace("_", " ")
-                .title()
-            )
-
+            friendly_name = key.replace("_", " ").title()
             html += f"""
 <tr>
-
-<td>
-{friendly_name}
-</td>
-
-<td>
-{value}
-</td>
-
+<td>{friendly_name}</td>
+<td>{value}</td>
 </tr>
 """
-
         html += """
 </table>
 
@@ -359,16 +227,10 @@ CPU Information
 
 <br>
 """
-
         return html
-    def render_expected_actual_table(
-        title,
-        expected,
-        actual,
-        result,
-        css
-    ):
 
+    @staticmethod
+    def render_expected_actual_table(title, expected, actual, result, css):
         html = f"""
 <div class="subsequence-title">
 {title}
@@ -385,19 +247,9 @@ CPU Information
 </tr>
 
 <tr>
-
-<td>
-{expected}
-</td>
-
-<td>
-{actual}
-</td>
-
-<td class="{css}">
-{result}
-</td>
-
+<td>{expected}</td>
+<td>{actual}</td>
+<td class="{css}">{result}</td>
 </tr>
 
 </table>
@@ -406,13 +258,10 @@ CPU Information
 
 <br>
 """
-
         return html
-    def render_measurement_table(
-        title,
-        rows
-    ):
 
+    @staticmethod
+    def render_measurement_table(title, rows):
         html = f"""
 <div class="subsequence-title">
 {title}
@@ -430,35 +279,16 @@ CPU Information
 <th>Result</th>
 </tr>
 """
-
         for row in rows:
-
             html += f"""
 <tr>
-
-<td>
-{row.get("name", "")}
-</td>
-
-<td>
-{row.get("low", "")}
-</td>
-
-<td>
-{row.get("actual", "")}
-</td>
-
-<td>
-{row.get("high", "")}
-</td>
-
-<td class="{row.get('css', '')}">
-{row.get("result", "")}
-</td>
-
+<td>{row.get("name", "")}</td>
+<td>{row.get("low", "")}</td>
+<td>{row.get("actual", "")}</td>
+<td>{row.get("high", "")}</td>
+<td class="{row.get('css', '')}">{row.get("result", "")}</td>
 </tr>
 """
-
         html += """
 </table>
 
@@ -466,57 +296,28 @@ CPU Information
 
 <br>
 """
-
         return html
-    def render_ports(
-        ports
-    ):
 
+    @staticmethod
+    def render_ports(ports):
         html = ""
-
         for port in ports:
-
             html += HtmlReportBuilder.render_subsequence_table(
-                port.get(
-                    "port",
-                    ""
-                ),
-                port.get(
-                    "rows",
-                    []
-                )
+                port.get("port", ""),
+                port.get("rows", [])
             )
-
         return html
-    @staticmethod
-    @staticmethod
-    def get_logo_base64(
-        logo_path
-    ):
 
+    @staticmethod
+    def get_logo_base64(logo_path):
         try:
-
-            with open(
-                logo_path,
-                "rb"
-            ) as f:
-
-                return (
-                    base64
-                    .b64encode(
-                        f.read()
-                    )
-                    .decode()
-                )
-
+            with open(logo_path, "rb") as f:
+                return base64.b64encode(f.read()).decode()
         except Exception:
-
             return ""
-    def render_subsequence_table(
-        title,
-        rows
-    ):
 
+    @staticmethod
+    def render_subsequence_table(title, rows):
         html = f"""
 <div class="subsequence-title">
 {title}
@@ -534,49 +335,21 @@ CPU Information
 <th>Result</th>
 </tr>
 """
-
         for row in rows:
-
             css_result = (
-                "pass"
-                if row.get(
-                    "result"
-                ) == "PASS"
-                else
-                "fail"
-                if row.get(
-                    "result"
-                ) == "FAIL"
-                else
-                "skipped"
+                "pass" if row.get("result") == "PASS"
+                else "fail" if row.get("result") == "FAIL"
+                else "skipped"
             )
-
             html += f"""
 <tr>
-
-<td>
-{row.get("name", "")}
-</td>
-
-<td>
-{row.get("low", "")}
-</td>
-
-<td>
-{row.get("actual", "")}
-</td>
-
-<td>
-{row.get("high", "")}
-</td>
-
-<td class="{css_result}">
-{row.get("result", "")}
-</td>
-
+<td>{row.get("name", "")}</td>
+<td>{row.get("low", "")}</td>
+<td>{row.get("actual", "")}</td>
+<td>{row.get("high", "")}</td>
+<td class="{css_result}">{row.get("result", "")}</td>
 </tr>
 """
-
         html += """
 </table>
 
@@ -584,11 +357,10 @@ CPU Information
 
 <br>
 """
-
         return html
+
     @staticmethod
     def begin_subsequence(title):
-
         return f"""
     <div class="subsequence-title">
     {title}
@@ -599,110 +371,46 @@ CPU Information
 
     @staticmethod
     def end_subsequence():
-
         return """
     </div>
     """
-    @staticmethod
-    def build(
-        results: dict,
-        sfc: str = "",
-        operation: str = "",
-        project: str = ""
-    ) -> str:
 
+    @staticmethod
+    def build(results: dict, sfc: str = "", operation: str = "", project: str = "") -> str:
         passed = 0
         failed = 0
         skipped = 0
 
         for result in results.values():
+            status = getattr(result, "status", "UNKNOWN")
+            verification = result.verification if hasattr(result, "verification") else {}
 
-            status = getattr(
-                result,
-                "status",
-                "UNKNOWN"
-            )
-
-            verification = (
-                result.verification
-                if hasattr(
-                    result,
-                    "verification"
-                )
-                else {}
-            )
-
-            if (
-                status == "UNKNOWN"
-                and
-                "No hay límites definidos"
-                in verification.get(
-                    "message",
-                    ""
-                )
-            ):
+            if (status == "UNKNOWN"
+                    and "No hay límites definidos" in verification.get("message", "")):
                 skipped += 1
-
             elif status == "PASS":
                 passed += 1
-
             elif status == "FAIL":
                 failed += 1
 
         total = len(results)
 
-        #
-        # Logo del proyecto
-        #
+        # Logo
         logo_name = ""
-
         if "STELLANTIS" in project.upper():
-
             logo_name = "stellantis.png"
-
         elif "GM" in project.upper():
-
             logo_name = "gm.png"
 
         logo_html = ""
-
         if logo_name:
-
-            logo_path = resource_path(
-                f"assets/{logo_name}"
-            )
-
-            print(
-                f"LOGO PATH = {logo_path}"
-            )
-
-            print(
-                f"EXISTS = {logo_path.exists()}"
-            )
-
-            logo_b64 = (
-                HtmlReportBuilder
-                .get_logo_base64(
-                    logo_path
-                )
-            )
-
-            print(
-                f"LOGO B64 LEN = {len(logo_b64)}"
-            )
-
+            logo_path = resource_path(f"assets/{logo_name}")
+            logo_b64 = HtmlReportBuilder.get_logo_base64(logo_path)
             if logo_b64:
-
                 logo_html = f"""
-<img
-    src="data:image/png;base64,{logo_b64}"
-    style="
-        max-width:180px;
-        max-height:70px;
-    "
->
+<img src="data:image/png;base64,{logo_b64}"
+     style="max-width:180px; max-height:70px;">
 """
-
 
         html = f"""
 <!DOCTYPE html>
@@ -718,15 +426,10 @@ CPU Information
 .subsequence-title {{
     margin-top: 15px;
     margin-left: 20px;
-
     background: #F4F7F9;
-
     padding: 6px 10px;
-
     border-left: 5px solid #5B9BD5;
-
     font-weight: bold;
-
     color: #1F2937;
 }}
 .test-summary {{
@@ -745,31 +448,25 @@ body {{
     margin: 20px;
     background: white;
 }}
-
 h1 {{
     border-bottom: 2px solid #404040;
     padding-bottom: 10px;
 }}
-
 .summary-table {{
     border-collapse: collapse;
     width: 700px;
 }}
-
 .summary-table td,
 .summary-table th {{
     border: 1px solid #CFCFCF;
     padding: 8px;
 }}
-
 .summary-table th {{
     background: #E9EEF2;
 }}
-
 .test-block {{
     margin-top: 25px;
 }}
-
 .test-title {{
     background: #BFD5E1;
     padding: 8px;
@@ -777,7 +474,6 @@ h1 {{
     border: 1px solid #A9BEC8;
     font-size: 14px;
 }}
-
 .info-table {{
     border-collapse: collapse;
     width: 100%;
@@ -793,31 +489,26 @@ h1 {{
     border: 1px solid #D0D0D0;
     padding: 6px;
 }}
-
 .label {{
     width: 250px;
     font-weight: bold;
     background: #EFEFEF;
 }}
-
 .pass {{
     background: #C6EFCE;
     color: #006100;
     font-weight: bold;
 }}
-
 .fail {{
     background: #FFC7CE;
     color: #9C0006;
     font-weight: bold;
 }}
-
 .skipped {{
     background: #E7E6E6;
     color: #404040;
     font-weight: bold;
 }}
-
 .section-title {{
     background: #DDEAF2;
     padding: 6px;
@@ -826,12 +517,10 @@ h1 {{
     border: 1px solid #C4D2DA;
     font-weight: bold;
 }}
-
 .detail-table {{
     border-collapse: collapse;
     width: 100%;
 }}
-
 .detail-table td {{
     border: 1px solid #D0D0D0;
     padding: 6px;
@@ -849,51 +538,30 @@ h1 {{
     font-weight: bold;
 }}
 .header-container {{
-
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     margin-bottom: 25px;
-
     border-bottom: 2px solid #404040;
-
     padding-bottom: 10px;
 }}
-
 .header-info {{
-
     flex: 1;
 }}
-
 .header-title {{
-
     font-size: 28px;
-
     font-weight: bold;
-
     color: #1F2937;
-
     margin-bottom: 10px;
 }}
-
 .header-project {{
-
     font-size: 18px;
-
     font-weight: 600;
-
     color: #404040;
-
     margin-bottom: 6px;
 }}
-
 .header-logo {{
-
     width: 220px;
-
     text-align: right;
 }}
 .raw-box {{
@@ -905,7 +573,6 @@ h1 {{
     font-family: Consolas;
     font-size: 12px;
 }}
-
 </style>
 
 </head>
@@ -913,117 +580,42 @@ h1 {{
 <body>
 
 <div class="header-container">
-
     <div class="header-info">
-
-        <div class="header-title">
-            TEST MANAGER REPORT
-        </div>
-
-        <div class="header-project">
-            Project: {project}
-        </div>
-
+        <div class="header-title">TEST MANAGER REPORT</div>
+        <div class="header-project">Project: {project}</div>
     </div>
-
-    <div class="header-logo">
-
-        {logo_html}
-
-    </div>
-
+    <div class="header-logo">{logo_html}</div>
 </div>
 
 <table class="summary-table">
-
-<tr>
-<th colspan="2">
-Traceability
-</th>
-</tr>
-
-<tr>
-<td>SFC</td>
-<td>{sfc}</td>
-</tr>
-
-<tr>
-<td>Operation</td>
-<td>{operation}</td>
-</tr>
-
-<tr>
-<td>Date</td>
-<td>{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</td>
-</tr>
-
+<tr><th colspan="2">Traceability</th></tr>
+<tr><td>SFC</td><td>{sfc}</td></tr>
+<tr><td>Operation</td><td>{operation}</td></tr>
+<tr><td>Date</td><td>{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</td></tr>
 </table>
 
 <br>
 
 <table class="summary-table">
-
-<tr>
-<th>Total</th>
-<th>PASS</th>
-<th>FAIL</th>
-<th>SKIPPED</th>
-</tr>
-
-<tr>
-<td>{total}</td>
-<td>{passed}</td>
-<td>{failed}</td>
-<td>{skipped}</td>
-</tr>
-
+<tr><th>Total</th><th>PASS</th><th>FAIL</th><th>SKIPPED</th></tr>
+<tr><td>{total}</td><td>{passed}</td><td>{failed}</td><td>{skipped}</td></tr>
 </table>
 """
 
         for name, result in results.items():
-
-            status = getattr(
-                result,
-                "status",
-                "UNKNOWN"
-            )
-
-            verification = (
-                result.verification
-                if hasattr(
-                    result,
-                    "verification"
-                )
-                else {}
-            )
-
-            parsed_data = (
-                result.parsed_data
-                if hasattr(
-                    result,
-                    "parsed_data"
-                )
-                else {}
-            )
+            status = getattr(result, "status", "UNKNOWN")
+            verification = result.verification if hasattr(result, "verification") else {}
+            parsed_data = result.parsed_data if hasattr(result, "parsed_data") else {}
 
             display_status = status
             css = "pass"
 
-            if (
-                status == "UNKNOWN"
-                and
-                "No hay límites definidos"
-                in verification.get(
-                    "message",
-                    ""
-                )
-            ):
+            if (status == "UNKNOWN"
+                    and "No hay límites definidos" in verification.get("message", "")):
                 display_status = "SKIPPED"
                 css = "skipped"
-
             elif status == "FAIL":
                 css = "fail"
-
             elif status == "PASS":
                 css = "pass"
 
@@ -1049,179 +641,61 @@ Traceability
 
 </div>
 """
-            #
-            # Verification
-            #
 
-            details = (
-                verification.get(
-                    "details",
-                    {}
-                )
-                if verification
-                else {}
-            )
-
+            details = verification.get("details", {}) if verification else {}
             show_message = True
 
             if (
-                (
-                    "temperature" in details
-                    and
-                    "humidity" in details
-                )
-                or
-                (
-                    "voltage" in details
-                    and
-                    "current" in details
-                )
-                or
-                (
-                    "expected" in details
-                    and
-                    "actual" in details
-                    and
-                    len(details) == 2
-                )
-                or
-                (
-                    "value" in details
-                    and
-                    "low" in details
-                    and
-                    "high" in details
-                )
-                or
-                (
-                    "temp" in details
-                    and
-                    "low" in details
-                    and
-                    "high" in details
-                )
-                or
-                (
-                    "score" in details
-                    and
-                    "low" in details
-                    and
-                    "high" in details
-                )
-                or
-                (
-                    name == "LPC"
-                )
-                or
-                (
-                    name in [
-                        "PCIe Iperf Test",
-                        "USB3_3 Iperf Test",
-                        "USB3_2 Iperf Test",
-                        "USB2 Iperf Test"
-                    ]
-                )
-                or
-                (
-                    name in [
-                        "PCIe number of port",
-                        "USB3_3 number of port",
-                        "USB2 number of port",
-                        "USB3_2 number of port"
-                    ]
-                )
-                or
-                (
-                    name == "AB Erase DID"
-                )
-                or
-                (
-                    name in [
-                        "USB3 to USB2",
-                        "USB2 to USB3"
-                    ]
-                )
-                or
-                (
-                    isinstance(
-                        parsed_data,
-                        dict
-                    )
-                    and
-                    "bus_width"
-                    in parsed_data.get(
-                        "data",
-                        {}
-                    )
-                    and
-                    "clock"
-                    in parsed_data.get(
-                        "data",
-                        {}
-                    )
-                )
+                ("temperature" in details and "humidity" in details)
+                or ("voltage" in details and "current" in details)
+                or ("expected" in details and "actual" in details and len(details) == 2)
+                or ("value" in details and "low" in details and "high" in details)
+                or ("temp" in details and "low" in details and "high" in details)
+                or ("score" in details and "low" in details and "high" in details)
+                or (name == "LPC")
+                or (name in ["PCIe Iperf Test", "USB3_3 Iperf Test",
+                             "USB3_2 Iperf Test", "USB2 Iperf Test"])
+                or (name in ["PCIe number of port", "USB3_3 number of port",
+                             "USB2 number of port", "USB3_2 number of port"])
+                or (name == "AB Erase DID")
+                or (name in ["USB3 to USB2", "USB2 to USB3"])
+                or (isinstance(parsed_data, dict)
+                    and "bus_width" in parsed_data.get("data", {})
+                    and "clock" in parsed_data.get("data", {}))
             ):
-
                 show_message = False
 
-            show_verification_section = False
+            is_iperf_test = name in [
+                "PCIe Iperf Test", "USB3_3 Iperf Test",
+                "USB3_2 Iperf Test", "USB2 Iperf Test"
+            ]
+
+            is_configuration_test = name in ["USB3 to USB2", "USB2 to USB3"]
+
+            is_number_of_port_test = name in [
+                "PCIe number of port", "USB3_3 number of port",
+                "USB2 number of port", "USB3_2 number of port"
+            ]
 
             if verification:
+                has_ports_renderer = ("ports" in details)
 
-                has_ports_renderer = (
-                    "ports" in details
-                )
-
-            show_verification_section = False
-
-            is_iperf_test = (
-                name in [
-                    "PCIe Iperf Test",
-                    "USB3_3 Iperf Test",
-                    "USB3_2 Iperf Test",
-                    "USB2 Iperf Test"
-                ]
-            )
-
-            is_configuration_test = (
-                name in [
-                    "USB3 to USB2",
-                    "USB2 to USB3"
-                ]
-            )
-
-            is_number_of_port_test = (
-                name in [
-                    "PCIe number of port",
-                    "USB3_3 number of port",
-                    "USB2 number of port",
-                    "USB3_2 number of port"
-                ]
-            )
-
-            if verification:
-
-                has_ports_renderer = (
-                    "ports" in details
-                )
-
-                if (
-                    not is_iperf_test
-                    and
+                # CAMBIO: mostrar verificación para iperf/CSI/config FAIL
+                should_show = (
                     not is_number_of_port_test
-                    and
-                    not has_ports_renderer
-                    and
-                    (
-                        show_message
-                        or
-                        len(details) > 0
+                    and (
+                        (
+                            not is_iperf_test
+                            and not has_ports_renderer
+                            and (show_message or len(details) > 0)
+                        )
+                        or (is_iperf_test and status == "FAIL")
+                        or (is_configuration_test and status == "FAIL")
                     )
-                ):
+                )
 
-                    show_verification_section = True
-
-                html += """
+                if should_show:
+                    html += """
 <div class="section-title">
 Verification
 </div>
@@ -1229,1419 +703,421 @@ Verification
 <table class="detail-table">
 """
 
-                if show_message:
-
-                    html += f"""
+                    # CAMBIO: mostrar message también en iperf FAIL
+                    if show_message or (is_iperf_test and status == "FAIL") or (is_configuration_test and status == "FAIL"):
+                        html += f"""
 <tr>
 <td class="detail-label">
 Message
 </td>
-
 <td>
 {verification.get("message", "")}
 </td>
 </tr>
 """
 
-                html += """
+                    html += """
 </table>
 """
 
-                details = verification.get(
-                    "details",
-                    {}
-                )
+                details = verification.get("details", {})
 
-                #
-                # PCB ID Renderer
-                #
-                if (
-                    "expected" in details
-                    and
-                    "actual" in details
-                    and
-                    len(details) == 2
-                ):
-
-                    html += (
-                        HtmlReportBuilder
-                        .render_expected_actual_table(
-                            "PCB Verification",
-                            details.get(
-                                "expected",
-                                ""
-                            ),
-                            details.get(
-                                "actual",
-                                ""
-                            ),
-                            display_status,
-                            css
-                        )
+                # PCB ID
+                if ("expected" in details and "actual" in details and len(details) == 2):
+                    html += HtmlReportBuilder.render_expected_actual_table(
+                        "PCB Verification",
+                        details.get("expected", ""),
+                        details.get("actual", ""),
+                        display_status,
+                        css
                     )
-                #
-                # Generic Value Renderer
-                #
-                elif (
-                    "value" in details
-                    and
-                    "low" in details
-                    and
-                    "high" in details
-                ):
 
+                # Generic Value
+                elif ("value" in details and "low" in details and "high" in details):
+                    rows = [{
+                        "name": details.get("sapme_key", "Value").replace("CHECK ", "").title(),
+                        "low": details.get("low", ""),
+                        "actual": details.get("value", ""),
+                        "high": details.get("high", ""),
+                        "result": display_status,
+                        "css": css
+                    }]
+                    html += HtmlReportBuilder.render_measurement_table(
+                        "Measurement Verification", rows
+                    )
+
+                # DDR
+                elif ("score" in details and "low" in details and "high" in details):
+                    rows = [{
+                        "name": details.get("sapme_key", "DDR VALUE"),
+                        "low": details.get("low", ""),
+                        "actual": details.get("score", ""),
+                        "high": details.get("high", ""),
+                        "result": display_status,
+                        "css": css
+                    }]
+                    html += HtmlReportBuilder.render_measurement_table(
+                        "DDR Verification", rows
+                    )
+
+                # SMBus
+                elif ("temp" in details and "low" in details and "high" in details):
+                    rows = [{
+                        "name": "Temperature",
+                        "low": details.get("low", ""),
+                        "actual": details.get("temp", ""),
+                        "high": details.get("high", ""),
+                        "result": display_status,
+                        "css": css
+                    }]
+                    html += HtmlReportBuilder.render_measurement_table(
+                        "SMBus Verification", rows
+                    )
+
+                # CPU INFO
+                elif (isinstance(parsed_data, dict)
+                      and "data" in parsed_data
+                      and isinstance(parsed_data["data"], dict)
+                      and "vendor_id" in parsed_data["data"]):
+                    html += HtmlReportBuilder.render_cpu_info_table(parsed_data["data"])
+
+                # MMC
+                elif (isinstance(parsed_data, dict)
+                      and "data" in parsed_data
+                      and isinstance(parsed_data["data"], dict)
+                      and "bus_width" in parsed_data["data"]
+                      and "clock" in parsed_data["data"]):
+                    mmc_title = "MMC Information"
+                    if "SDIO" in name.upper():
+                        mmc_title = "SDIO Information"
+                    elif "EMMC" in name.upper():
+                        mmc_title = "EMMC Information"
+                    html += HtmlReportBuilder.render_mmc_info_table(
+                        mmc_title, parsed_data["data"]
+                    )
+
+                # Thermal
+                if ("temperature" in details and "humidity" in details):
                     rows = [
-
-                        {
-                            "name": (
-                                details.get(
-                                    "sapme_key",
-                                    "Value"
-                                )
-                                .replace(
-                                    "CHECK ",
-                                    ""
-                                )
-                                .title()
-                            ),
-                            "low": details.get(
-                                "low",
-                                ""
-                            ),
-                            "actual": details.get(
-                                "value",
-                                ""
-                            ),
-                            "high": details.get(
-                                "high",
-                                ""
-                            ),
-                            "result": display_status,
-                            "css": css
-                        }
-
+                        {"name": "Temperature", "low": "", "actual": f"{details['temperature']} °C",
+                         "high": "", "result": display_status, "css": css},
+                        {"name": "Humidity", "low": "", "actual": f"{details['humidity']} %",
+                         "high": "", "result": display_status, "css": css}
                     ]
-
-                    html += (
-                        HtmlReportBuilder
-                        .render_measurement_table(
-                            "Measurement Verification",
-                            rows
-                        )
+                    html += HtmlReportBuilder.render_measurement_table(
+                        "Thermal Measurements", rows
                     )
 
-                #
-                # DDR Renderer
-                #
-                elif (
-                    "score" in details
-                    and
-                    "low" in details
-                    and
-                    "high" in details
-                ):
-
+                # Current / Voltage
+                elif ("voltage" in details and "current" in details):
                     rows = [
-
-                        {
-                            "name": details.get(
-                                "sapme_key",
-                                "DDR VALUE"
-                            ),
-                            "low": details.get(
-                                "low",
-                                ""
-                            ),
-                            "actual": details.get(
-                                "score",
-                                ""
-                            ),
-                            "high": details.get(
-                                "high",
-                                ""
-                            ),
-                            "result": display_status,
-                            "css": css
-                        }
-
+                        {"name": "Voltage", "low": details.get("voltage_low", ""),
+                         "actual": details.get("voltage", ""),
+                         "high": details.get("voltage_high", ""),
+                         "result": display_status, "css": css},
+                        {"name": "Current", "low": details.get("current_low", ""),
+                         "actual": details.get("current", ""),
+                         "high": details.get("current_high", ""),
+                         "result": display_status, "css": css}
                     ]
-
-                    html += (
-                        HtmlReportBuilder
-                        .render_measurement_table(
-                            "DDR Verification",
-                            rows
-                        )
+                    html += HtmlReportBuilder.render_measurement_table(
+                        "Current / Voltage Measurements", rows
                     )
 
-                #
-                # SMBus Renderer
-                #
-                elif (
-                    "temp" in details
-                    and
-                    "low" in details
-                    and
-                    "high" in details
-                ):
-
-                    rows = [
-
-                        {
-                            "name":
-                                "Temperature",
-
-                            "low":
-                                details.get(
-                                    "low",
-                                    ""
-                                ),
-
-                            "actual":
-                                details.get(
-                                    "temp",
-                                    ""
-                                ),
-
-                            "high":
-                                details.get(
-                                    "high",
-                                    ""
-                                ),
-
-                            "result":
-                                display_status,
-
-                            "css":
-                                css
-                        }
-
-                    ]
-
-                    html += (
-                        HtmlReportBuilder
-                        .render_measurement_table(
-                            "SMBus Verification",
-                            rows
-                        )
-                    )
-                #
-                # CPU INFO Renderer
-                #
-                elif (
-                    isinstance(parsed_data, dict)
-                    and
-                    "data" in parsed_data
-                    and
-                    isinstance(
-                        parsed_data["data"],
-                        dict
-                    )
-                    and
-                    "vendor_id" in parsed_data["data"]
-                ):
-
-                    html += (
-                        HtmlReportBuilder
-                        .render_cpu_info_table(
-                            parsed_data["data"]
-                        )
-                    )
-                #
-                # SDIO / EMMC Renderer
-                #
-                elif (
-                    isinstance(parsed_data, dict)
-                    and
-                    "data" in parsed_data
-                    and
-                    isinstance(
-                        parsed_data["data"],
-                        dict
-                    )
-                    and
-                    "bus_width"
-                    in parsed_data["data"]
-                    and
-                    "clock"
-                    in parsed_data["data"]
-                ):
-
-                    mmc_title = (
-                        "MMC Information"
-                    )
-
-                    if (
-                        "SDIO"
-                        in
-                        name.upper()
-                    ):
-
-                        mmc_title = (
-                            "SDIO Information"
-                        )
-
-                    elif (
-                        "EMMC"
-                        in
-                        name.upper()
-                    ):
-
-                        mmc_title = (
-                            "EMMC Information"
-                        )
-
-                    html += (
-                        HtmlReportBuilder
-                        .render_mmc_info_table(
-                            mmc_title,
-                            parsed_data[
-                                "data"
-                            ]
-                        )
-                    )
-
-
-                #
-                # Thermal Renderer
-                #
-                if (
-                    "temperature" in details
-                    and
-                    "humidity" in details
-                ):
-
-                    rows = [
-
-                        {
-                            "name": "Temperature",
-                            "low": "",
-                            "actual": f"{details['temperature']} °C",
-                            "high": "",
-                            "result": display_status,
-                            "css": css
-                        },
-
-                        {
-                            "name": "Humidity",
-                            "low": "",
-                            "actual": f"{details['humidity']} %",
-                            "high": "",
-                            "result": display_status,
-                            "css": css
-                        }
-
-                    ]
-
-                    html += (
-                        HtmlReportBuilder
-                        .render_measurement_table(
-                            "Thermal Measurements",
-                            rows
-                        )
-                    )
-                #
-                # Current / Voltage Renderer
-                #
-                elif (
-                    "voltage" in details
-                    and
-                    "current" in details
-                ):
-
-                    rows = [
-
-                        {
-                            "name": "Voltage",
-                            "low": details.get(
-                                "voltage_low",
-                                ""
-                            ),
-                            "actual": details.get(
-                                "voltage",
-                                ""
-                            ),
-                            "high": details.get(
-                                "voltage_high",
-                                ""
-                            ),
-                            "result": display_status,
-                            "css": css
-                        },
-
-                        {
-                            "name": "Current",
-                            "low": details.get(
-                                "current_low",
-                                ""
-                            ),
-                            "actual": details.get(
-                                "current",
-                                ""
-                            ),
-                            "high": details.get(
-                                "current_high",
-                                ""
-                            ),
-                            "result": display_status,
-                            "css": css
-                        }
-
-                    ]
-
-                    html += (
-                        HtmlReportBuilder
-                        .render_measurement_table(
-                            "Current / Voltage Measurements",
-                            rows
-                        )
-                    )
-                #
-                # Ports Renderer (USB / PCIe)
-                #
-                ports = details.get(
-                    "ports",
-                    []
-                )
-
+                # Ports
+                ports = details.get("ports", [])
                 if ports:
-
                     html += """
 <div class="section-title">
 Measured Data
 </div>
 """
+                    html += HtmlReportBuilder.render_ports(ports)
 
-                    html += (
-                        HtmlReportBuilder.render_ports(
-                            ports
-                        )
-                    )
-
-                #
-                # Expected / Actual
-                #
-
+                # Expected / Actual genéricos
                 show_expected_actual = True
-
-                if (
-                    "expected" in details
-                    and
-                    "actual" in details
-                    and
-                    len(details) == 2
-                ):
-
+                if ("expected" in details and "actual" in details and len(details) == 2):
                     show_expected_actual = False
 
-                if (
-                    show_expected_actual
-                    and
-                    "expected" in details
-                ):
-
+                if show_expected_actual and "expected" in details:
                     html += f"""
 <tr>
-<td class="detail-label">
-Expected
-</td>
-
-<td>
-{details.get("expected")}
-</td>
+<td class="detail-label">Expected</td>
+<td>{details.get("expected")}</td>
 </tr>
 """
 
-                if (
-                    show_expected_actual
-                    and
-                    "actual" in details
-                ):
-
+                if show_expected_actual and "actual" in details:
                     html += f"""
 <tr>
-<td class="detail-label">
-Actual
-</td>
-
-<td>
-{details.get("actual")}
-</td>
+<td class="detail-label">Actual</td>
+<td>{details.get("actual")}</td>
 </tr>
 """
 
-                #
                 # Limits
-                #
-
                 show_limits = True
-
-                if (
-                    (
-                        "value" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                    or
-                    (
-                        "score" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                    or
-                    (
-                        "temp" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                ):
-
+                if (("value" in details and "low" in details and "high" in details)
+                        or ("score" in details and "low" in details and "high" in details)
+                        or ("temp" in details and "low" in details and "high" in details)):
                     show_limits = False
 
-                low = details.get(
-                    "low"
-                )
+                low = details.get("low")
+                high = details.get("high")
 
-                high = details.get(
-                    "high"
-                )
-
-                if (
-                    show_limits
-                    and
-                    (
-                        low is not None
-                        or
-                        high is not None
-                    )
-                ):
-
+                if show_limits and (low is not None or high is not None):
                     html += f"""
 <tr>
-<td class="detail-label">
-Low Limit
-</td>
-
-<td>
-{low}
-</td>
+<td class="detail-label">Low Limit</td>
+<td>{low}</td>
 </tr>
-
 <tr>
-<td class="detail-label">
-High Limit
-</td>
-
-<td>
-{high}
-</td>
+<td class="detail-label">High Limit</td>
+<td>{high}</td>
 </tr>
 """
 
-                #
-                # Additional Details
-                #
-
+                # Additional details
                 remaining_details = {}
-
                 for key, value in details.items():
-
-                    if key in (
-                        "expected",
-                        "actual",
-                        "low",
-                        "high",
-                        "ports",
-                        "channels",
-                        "adc"
-                    ):
+                    if key in ("expected", "actual", "low", "high", "ports",
+                               "channels", "adc"):
                         continue
-
                     remaining_details[key] = value
 
-                #
-                # Thermal y CurrSens
-                # Ya tienen renderer dedicado
-                #
-                if (
-                    (
-                        "temperature" in details
-                        and
-                        "humidity" in details
-                    )
-                    or
-                    (
-                        "voltage" in details
-                        and
-                        "current" in details
-                    )
-                    or
-                    (
-                        "value" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                    or
-                    (
-                        "score" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                    or
-                    (
-                        "temp" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                    or
-                    (
-                        "sapme_key" in details
-                        and
-                        "actual" in details
-                        and
-                        name == "AB Erase DID"
-                    )
-                ):
-
+                if (("temperature" in details and "humidity" in details)
+                        or ("voltage" in details and "current" in details)
+                        or ("value" in details and "low" in details and "high" in details)
+                        or ("score" in details and "low" in details and "high" in details)
+                        or ("temp" in details and "low" in details and "high" in details)
+                        or ("sapme_key" in details and "actual" in details and name == "AB Erase DID")):
                     remaining_details = {}
 
                 if remaining_details:
-
                     html += """
 <tr>
-<td class="detail-label">
-Additional Details
-</td>
-
+<td class="detail-label">Additional Details</td>
 <td>
 """
-
                     for key, value in remaining_details.items():
-
-                        html += (
-                            f"<b>{key}</b>: "
-                            f"{value}<br>"
-                        )
-
+                        html += f"<b>{key}</b>: {value}<br>"
                     html += """
 </td>
 </tr>
 """
 
-            #
             # Test Results / Data
-            #
-
             show_test_results = True
 
-            if (
-                isinstance(
-                    parsed_data,
-                    dict
-                )
-            ):
+            if isinstance(parsed_data, dict):
+                details = verification.get("details", {})
 
-                details = verification.get(
-                    "details",
-                    {}
-                )
-
-                if (
-                    (
-                        "temperature" in details
-                        and
-                        "humidity" in details
-                    )
-                    or
-                    (
-                        "voltage" in details
-                        and
-                        "current" in details
-                    )
-                    or
-                    (
-                        "expected" in details
-                        and
-                        "actual" in details
-                        and
-                        len(details) == 2
-                    )
-                    or
-                    (
-                        "vendor_id"
-                        in parsed_data.get(
-                            "data",
-                            {}
-                        )
-                    )
-                    or
-                    (
-                        "value" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                    or
-                    (
-                        "score" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                    or
-                    (
-                        "temp" in details
-                        and
-                        "low" in details
-                        and
-                        "high" in details
-                    )
-                    or
-                    (
-                        parsed_data.get(
-                            "data",
-                            {}
-                        ).get(
-                            "message"
-                        )
-                        == "COMMAND ACCEPT"
-                    )
-                    or
-                    (
-                        name == "LPC"
-                    )
-                    or
-                    (
-                        isinstance(
-                            details.get(
-                                "ports",
-                                []
-                            ),
-                            list
-                        )
-                        and
-                        len(
-                            details.get(
-                                "ports",
-                                []
-                            )
-                        ) > 0
-                    )
-                    or
-                    (
-                        name in [
-                            "USB3 to USB2",
-                            "USB2 to USB3"
-                        ]
-                    )
-                    or
-                    (
-                        name == "AB Erase DID"
-                    )
-                    or
-                    (
-                        isinstance(
-                            parsed_data,
-                            dict
-                        )
-                        and
-                        "bus_width"
-                        in parsed_data.get(
-                            "data",
-                            {}
-                        )
-                        and
-                        "clock"
-                        in parsed_data.get(
-                            "data",
-                            {}
-                        )
-                    )
-                ):
-
+                if (("temperature" in details and "humidity" in details)
+                        or ("voltage" in details and "current" in details)
+                        or ("expected" in details and "actual" in details and len(details) == 2)
+                        or ("vendor_id" in parsed_data.get("data", {}))
+                        or ("value" in details and "low" in details and "high" in details)
+                        or ("score" in details and "low" in details and "high" in details)
+                        or ("temp" in details and "low" in details and "high" in details)
+                        or (parsed_data.get("data", {}).get("message") == "COMMAND ACCEPT")
+                        or (name == "LPC")
+                        or (isinstance(details.get("ports", []), list)
+                            and len(details.get("ports", [])) > 0)
+                        or (name in ["USB3 to USB2", "USB2 to USB3"])
+                        or (name == "AB Erase Did")
+                        or (isinstance(parsed_data, dict)
+                            and "bus_width" in parsed_data.get("data", {})
+                            and "clock" in parsed_data.get("data", {}))):
                     show_test_results = False
 
-            if (
-                parsed_data
-                and
-                show_test_results
-            ):
-
+            if parsed_data and show_test_results:
                 html += """
 <div class="section-title">
 TestResults / Data
 </div>
 """
-                #
-                # SPI Renderer
-                #
-                if (
-                    isinstance(
-                        parsed_data,
-                        dict
-                    )
-                    and
-                    "steps" in parsed_data
-                    and
-                    len(
-                        parsed_data["steps"]
-                    ) > 0
-                    and
-                    "device_id"
-                    in
-                    parsed_data["steps"][0]
-                    .get(
-                        "verification",
-                        {}
-                    )
-                    .get(
-                        "details",
-                        {}
-                    )
-                ):
 
-                    spi_limits = (
-                        app_state
-                        .sapme_limits
-                        .get(
-                            "SPI",
-                            {}
-                        )
-                    )
-
+                # SPI
+                if (isinstance(parsed_data, dict)
+                        and "steps" in parsed_data
+                        and len(parsed_data["steps"]) > 0
+                        and "device_id" in parsed_data["steps"][0]
+                        .get("verification", {}).get("details", {})):
+                    spi_limits = app_state.sapme_limits.get("SPI", {})
                     rows = []
-
                     for step in parsed_data["steps"]:
-
-                        details = (
-                            step
-                            .get(
-                                "verification",
-                                {}
-                            )
-                            .get(
-                                "details",
-                                {}
-                            )
-                        )
-
-                        cmd = step.get(
-                            "cmd",
-                            ""
-                        )
-
-                        device = (
-                            cmd.replace(
-                                "websocket_test.sh spi ",
-                                ""
-                            )
-                            .strip()
-                        )
-
-                        sapme_key = (
-                            f"SPI_{device}_ID"
-                        )
-
-                        expected = (
-                            spi_limits
-                            .get(
-                                sapme_key,
-                                {}
-                            )
-                            .get(
-                                "high",
-                                ""
-                            )
-                        )
-
-                        actual = details.get(
-                            "device_id",
-                            ""
-                        )
-
+                        details_spi = step.get("verification", {}).get("details", {})
+                        cmd = step.get("cmd", "")
+                        device = cmd.replace("websocket_test.sh spi ", "").strip()
+                        sapme_key = f"SPI_{device}_ID"
+                        expected = spi_limits.get(sapme_key, {}).get("high", "")
+                        actual = details_spi.get("device_id", "")
                         rows.append({
-
-                            "device":
-                                f"SPI {device}",
-
-                            "expected":
-                                expected,
-
-                            "actual":
-                                actual,
-
-                            "result":
-                                step
-                                .get(
-                                    "verification",
-                                    {}
-                                )
-                                .get(
-                                    "status",
-                                    ""
-                                )
+                            "device": f"SPI {device}",
+                            "expected": expected,
+                            "actual": actual,
+                            "result": step.get("verification", {}).get("status", "")
                         })
+                    html += HtmlReportBuilder.render_spi_table(rows)
 
-                    html += (
-                        HtmlReportBuilder
-                        .render_spi_table(
-                            rows
-                        )
-                    )
-
-                #
-                # I2S Renderer
-                #
-                elif (
-                    name == "I2S"
-                    and
-                    isinstance(
-                        parsed_data,
-                        dict
-                    )
-                    and
-                    "steps" in parsed_data
-                ):
-
-                    i2s_limits = (
-                        app_state
-                        .sapme_limits
-                        .get(
-                            "I2S",
-                            {}
-                        )
-                    )
-
+                # I2S
+                elif (name == "I2S"
+                      and isinstance(parsed_data, dict)
+                      and "steps" in parsed_data):
+                    i2s_limits = app_state.sapme_limits.get("I2S", {})
                     rows = []
-
                     for step in parsed_data["steps"]:
-
-                        details = (
-                            step
-                            .get(
-                                "verification",
-                                {}
-                            )
-                            .get(
-                                "details",
-                                {}
-                            )
-                        )
-
-                        #
-                        # Ignorar pasos loopback y stop
-                        #
-                        if (
-                            "score"
-                            not in details
-                        ):
+                        details_i2s = step.get("verification", {}).get("details", {})
+                        if "score" not in details_i2s:
                             continue
-
-                        cmd = step.get(
-                            "cmd",
-                            ""
-                        )
-
-                        match = re.search(
-                            r"i2s\s+(\d+)\s+1\s+1",
-                            cmd
-                        )
-
+                        cmd = step.get("cmd", "")
+                        match = re.search(r"i2s\s+(\d+)\s+1\s+1", cmd)
                         if not match:
                             continue
-
-                        channel_num = (
-                            match.group(1)
-                        )
-
-                        sapme_key = (
-                            f"CHECKI2S_{channel_num}_VALUE"
-                        )
-
-                        limits = (
-                            i2s_limits
-                            .get(
-                                sapme_key,
-                                {}
-                            )
-                        )
-
+                        channel_num = match.group(1)
+                        sapme_key = f"CHECKI2S_{channel_num}_VALUE"
+                        limits_i2s = i2s_limits.get(sapme_key, {})
                         rows.append({
-
-                            "name":
-                                f"I2S {channel_num}",
-
-                            "low":
-                                limits.get(
-                                    "low",
-                                    ""
-                                ),
-
-                            "actual":
-                                details.get(
-                                    "score",
-                                    ""
-                                ),
-
-                            "high":
-                                limits.get(
-                                    "high",
-                                    ""
-                                ),
-
-                            "result":
-                                step
-                                .get(
-                                    "verification",
-                                    {}
-                                )
-                                .get(
-                                    "status",
-                                    ""
-                                )
+                            "name": f"I2S {channel_num}",
+                            "low": limits_i2s.get("low", ""),
+                            "actual": details_i2s.get("score", ""),
+                            "high": limits_i2s.get("high", ""),
+                            "result": step.get("verification", {}).get("status", "")
                         })
-
                     if rows:
+                        html += HtmlReportBuilder.render_i2s_table(rows)
 
-                        html += (
-                            HtmlReportBuilder
-                            .render_i2s_table(
-                                rows
-                            )
-                        )
-                #
-                # I2C Renderer
-                #
-                elif (
-                    isinstance(
-                        parsed_data,
-                        dict
-                    )
-                    and
-                    "steps" in parsed_data
-                    and
-                    len(parsed_data["steps"]) > 0
-                    and
-                    "temp"
-                    in
-                    parsed_data["steps"][0]
-                    .get(
-                        "verification",
-                        {}
-                    )
-                    .get(
-                        "details",
-                        {}
-                    )
-                ):
-
+                # I2C
+                elif (isinstance(parsed_data, dict)
+                      and "steps" in parsed_data
+                      and len(parsed_data["steps"]) > 0
+                      and "temp" in parsed_data["steps"][0]
+                      .get("verification", {}).get("details", {})):
                     rows = []
-
                     for step in parsed_data["steps"]:
-
-                        details = (
-                            step
-                            .get(
-                                "verification",
-                                {}
-                            )
-                            .get(
-                                "details",
-                                {}
-                            )
+                        details_i2c = step.get("verification", {}).get("details", {})
+                        sensor_name = details_i2c.get("sapme_key", "").replace(
+                            "12C_TEMPERATURE_", "Sensor "
                         )
-
-                        sensor_name = (
-                            details.get(
-                                "sapme_key",
-                                ""
-                            )
-                            .replace(
-                                "12C_TEMPERATURE_",
-                                "Sensor "
-                            )
-                        )
-
                         rows.append({
-
-                            "sensor":
-                                sensor_name,
-
-                            "low":
-                                details.get(
-                                    "low",
-                                    ""
-                                ),
-
-                            "actual":
-                                details.get(
-                                    "temp",
-                                    ""
-                                ),
-
-                            "high":
-                                details.get(
-                                    "high",
-                                    ""
-                                ),
-
-                            "result":
-                                step
-                                .get(
-                                    "verification",
-                                    {}
-                                )
-                                .get(
-                                    "status",
-                                    ""
-                                )
+                            "sensor": sensor_name,
+                            "low": details_i2c.get("low", ""),
+                            "actual": details_i2c.get("temp", ""),
+                            "high": details_i2c.get("high", ""),
+                            "result": step.get("verification", {}).get("status", "")
                         })
+                    html += HtmlReportBuilder.render_i2c_table(rows)
 
-                    html += (
-                        HtmlReportBuilder
-                        .render_i2c_table(
-                            rows
-                        )
-                    )
-                #
-                # GPIO Renderer
-                #
-                elif (
-                    name == "GPIO"
-                    and
-                    isinstance(
-                        parsed_data,
-                        dict
-                    )
-                    and
-                    "steps" in parsed_data
-                ):
-
+                # GPIO
+                elif (name == "GPIO"
+                      and isinstance(parsed_data, dict)
+                      and "steps" in parsed_data):
                     patterns = {}
-
                     for step in parsed_data["steps"]:
-
-                        details = (
-                            step
-                            .get(
-                                "verification",
-                                {}
-                            )
-                            .get(
-                                "details",
-                                {}
-                            )
-                        )
-
-                        patterns.update(
-                            details.get(
-                                "patterns",
-                                {}
-                            )
-                        )
-
+                        details_gpio = step.get("verification", {}).get("details", {})
+                        if "patterns" in details_gpio:
+                            patterns.update(details_gpio["patterns"])
+                        elif "pattern" in details_gpio and "actual" in details_gpio:
+                            patterns[details_gpio["pattern"]] = {
+                                "high": details_gpio.get("expected", ""),
+                                "actual": details_gpio.get("actual", ""),
+                                "status": step.get("verification", {}).get("status", "")
+                            }
                     rows = []
-
-                    for (
-                        pattern_name,
-                        pattern_data
-                    ) in patterns.items():
-                        
-                        if not (
-                            pattern_name.endswith(
-                                "_0-15"
-                            )
-                            or
-                            pattern_name.endswith(
-                                "_16-31"
-                            )
-                            or
-                            pattern_name.endswith(
-                                "_32-41"
-                            )
-                        ):
+                    for pattern_name, pattern_data in patterns.items():
+                        if not (pattern_name.endswith("_0-15")
+                                or pattern_name.endswith("_16-31")
+                                or pattern_name.endswith("_32-41")):
                             continue
-                        #
-                        # Sólo mostrar
-                        # patrones principales
-                        #
-                        if not (
-                            pattern_name.endswith(
-                                "_0-15"
-                            )
-                            or
-                            pattern_name.endswith(
-                                "_16-31"
-                            )
-                            or
-                            pattern_name.endswith(
-                                "_32-41"
-                            )
-                        ):
-                            continue
-
                         rows.append({
-
-                            "pattern":
-                                pattern_name,
-
-                            "expected":
-                                pattern_data.get(
-                                    "high",
-                                    ""
-                                ),
-
-                            "actual":
-                                pattern_data.get(
-                                    "actual",
-                                    ""
-                                ),
-
-                            "result":
-                                pattern_data.get(
-                                    "status",
-                                    ""
-                                )
+                            "pattern": pattern_name,
+                            "expected": pattern_data.get("high", ""),
+                            "actual": pattern_data.get("actual", ""),
+                            "result": pattern_data.get("status", "")
                         })
-
                     if rows:
+                        html += HtmlReportBuilder.render_gpio_table(rows)
 
-                        html += (
-                            HtmlReportBuilder
-                            .render_gpio_table(
-                                rows
-                            )
-                        )  
-                #
-                # PWM Renderer
-                #
-                elif (
-                    name == "PWM"
-                    and
-                    isinstance(
-                        parsed_data,
-                        dict
-                    )
-                    and
-                    "steps" in parsed_data
-                ):
-
+                # PWM
+                elif (name == "PWM"
+                      and isinstance(parsed_data, dict)
+                      and "steps" in parsed_data):
                     rows = []
-
                     for step in parsed_data["steps"]:
-
-                        cmd = step.get(
-                            "cmd",
-                            ""
-                        )
-
-                        command_name = (
-                            cmd.replace(
-                                "websocket_test.sh ",
-                                ""
-                            )
-                        )
-
-                        result = (
-                            step
-                            .get(
-                                "verification",
-                                {}
-                            )
-                            .get(
-                                "status",
-                                ""
-                            )
-                        )
-
+                        cmd = step.get("cmd", "")
+                        command_name = cmd.replace("websocket_test.sh ", "")
+                        result_step = step.get("verification", {}).get("status", "")
                         rows.append({
-
-                            "command":
-                                command_name,
-
-                            "result":
-                                result
+                            "command": command_name,
+                            "result": result_step
                         })
+                    html += HtmlReportBuilder.render_pwm_table(rows)
 
-                    html += (
-                        HtmlReportBuilder
-                        .render_pwm_table(
-                            rows
-                        )
-                    )                  
-                #
-                # ADC Special Renderer
-                #
-
-                elif (
-                    isinstance(parsed_data, dict)
-                    and
-                    "steps" in parsed_data
-                ):
-
-                    for idx, step in enumerate(
-                        parsed_data["steps"]
-                    ):
-
+                # ADC
+                elif (isinstance(parsed_data, dict) and "steps" in parsed_data):
+                    for idx, step in enumerate(parsed_data["steps"]):
                         html += f"""
 <table class="detail-table">
-
 <tr>
-<td class="detail-label">
-ADC Step
-</td>
-
-<td>
-{idx + 1}
-</td>
+<td class="detail-label">ADC Step</td>
+<td>{idx + 1}</td>
 </tr>
-
 <tr>
-<td class="detail-label">
-Command
-</td>
-
-<td>
-{step.get("cmd", "")}
-</td>
+<td class="detail-label">Command</td>
+<td>{step.get("cmd", "")}</td>
 </tr>
-
 </table>
 
 <br>
 """
-
-                        verification = step.get(
-                            "verification",
-                            {}
-                        )
+                        verification_adc = step.get("verification", {})
                         html += f"""
 <div class="adc-summary">
-
 <b>Step:</b> {idx + 1}
 &nbsp;&nbsp;|&nbsp;&nbsp;
-<b>Status:</b> {verification.get("status", "")}
+<b>Status:</b> {verification_adc.get("status", "")}
 &nbsp;&nbsp;|&nbsp;&nbsp;
-{verification.get("message", "")}
-
+{verification_adc.get("message", "")}
 </div>
 
 <br>
 """
-
-                        details = verification.get(
-                            "details",
-                            {}
-                        )
-
-                        adc_name = details.get(
-                            "adc",
-                            ""
-                        )
-
-                        channels = details.get(
-                            "channels",
-                            []
-                        )
-
+                        details_adc = verification_adc.get("details", {})
+                        adc_name = details_adc.get("adc", "")
+                        channels = details_adc.get("channels", [])
                         if channels:
-
                             rows = []
-
                             for channel in channels:
-
                                 rows.append({
-
-                                    "name": channel.get(
-                                        "channel",
-                                        ""
-                                    ),
-
-                                    "low": channel.get(
-                                        "low",
-                                        ""
-                                    ),
-
-                                    "high": channel.get(
-                                        "high",
-                                        ""
-                                    ),
-
-                                    "actual": channel.get(
-                                        "actual",
-                                        ""
-                                    ),
-
-                                    "result": channel.get(
-                                        "result",
-                                        ""
-                                    )
-
+                                    "name": channel.get("channel", ""),
+                                    "low": channel.get("low", ""),
+                                    "high": channel.get("high", ""),
+                                    "actual": channel.get("actual", ""),
+                                    "result": channel.get("result", "")
                                 })
-
                             html += HtmlReportBuilder.render_subsequence_table(
-                                adc_name,
-                                rows
+                                adc_name, rows
                             )
 
-                       
-                #
-                # Generic Data Renderer
-                #
-
-                elif (
-                    isinstance(parsed_data, dict)
-                    and
-                    "data" in parsed_data
-                    and
-                    isinstance(
-                        parsed_data["data"],
-                        dict
-                    )
-                ):
-
+                # Generic data
+                elif (isinstance(parsed_data, dict)
+                      and "data" in parsed_data
+                      and isinstance(parsed_data["data"], dict)):
                     data_rows = parsed_data["data"]
-
                     if len(data_rows) <= 20:
-
                         html += """
 <table class="detail-table">
 """
-
                         for key, value in data_rows.items():
-
                             html += f"""
 <tr>
-<td class="detail-label">
-{key}
-</td>
-
-<td>
-{value}
-</td>
+<td class="detail-label">{key}</td>
+<td>{value}</td>
 </tr>
 """
-
                         html += """
 </table>
 """
-
-
-
 
             html += """
 </div>

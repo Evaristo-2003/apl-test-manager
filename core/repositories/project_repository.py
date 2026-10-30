@@ -51,3 +51,18 @@ class ProjectRepository:
     def reload(self):
 
         self._load()
+
+    def get_project_from_sfc(
+        self,
+        sfc: str
+    ) -> str:
+
+        for suffix, project in self._projects.items():
+
+            clean_suffix = suffix.lstrip("0")
+
+            if sfc.endswith(clean_suffix):
+
+                return project
+
+        return "UNKNOWN"

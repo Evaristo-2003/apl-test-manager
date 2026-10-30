@@ -1,100 +1,300 @@
-
 {
     "Check PCB ID": {
-        "type": "exists"
+        "expected": "32FF"
     },
+
     "Check ABL": {
-        "type": "exists"
+        "expected": "2027"
     },
+
     "Kernel Version": {
-        "contains": "4.1.27"
+        "expected": "4.1.27"
     },
+
     "CPU info": {
-        "CPU_MHZ": 2000,
-        "CPU_MAX_MHZ": 2000,
-        "CPU_MIN_MHZ": 800
+        "vendor_id": "GENUINEINTEL",
+        "cpu_family": "6",
+        "model": "92",
+        "model_name": "INTEL(R)ATOM(TM)PROCESSORA3950@1,60GHZ",
+        "l1d_cache": "24K",
+        "l1i_cache": "32K",
+        "l2_cache": "1024K"
     },
+
+    "CBHW Version": {
+        "expected": "G"
+    },
+
+    "CBSW Version": {
+        "expected": "V1.0.4.25 20201225"
+    },
+
+    "ABHW Version": {
+        "expected": "H"
+    },
+
+    "ABSW Version": {
+        "expected": "V0.0.5.5 20210219"
+    },
+
     "Thermal Port 0": {
-        "temperature_min": 15,
-        "temperature_max": 60,
-        "humidity_min": 5,
-        "humidity_max": 95
+        "temperature_min": -9999,
+        "temperature_max": 9999,
+        "humidity_min": -9999,
+        "humidity_max": 9999
     },
+
     "Thermal Port 4": {
-        "temperature_min": 15,
-        "temperature_max": 60,
-        "humidity_min": 5,
-        "humidity_max": 95
+        "temperature_min": -45,
+        "temperature_max": 110,
+        "humidity_min": 0,
+        "humidity_max": 100
     },
+
     "cursens_12vtoj6": {
-        "voltage_min": 11.0,
-        "voltage_max": 12.5
+        "voltage_min": 9.5,
+        "voltage_max": 13.0,
+        "current_min": -999,
+        "current_max": 999
     },
+
     "cursens_hsbridge": {
-        "voltage_min": 11.0,
-        "voltage_max": 12.5
+        "voltage_min": 9.5,
+        "voltage_max": 13.0,
+        "current_min": -999,
+        "current_max": 999
     },
+
     "cursens_ab3v3": {
-        "voltage_min": 3.2,
-        "voltage_max": 3.4
+        "voltage_min": 3.135,
+        "voltage_max": 3.465,
+        "current_min": 0.1,
+        "current_max": 4.0
     },
+
     "cursens_ab5v": {
-        "voltage_min": 4.8,
-        "voltage_max": 5.2
+        "voltage_min": 4.75,
+        "voltage_max": 5.25,
+        "current_min": -999,
+        "current_max": 999
     },
+
     "cursens_12vtoab": {
-        "voltage_min": 11.0,
-        "voltage_max": 12.5
+        "voltage_min": 9.5,
+        "voltage_max": 13.0,
+        "current_min": -999,
+        "current_max": 999
     },
+
     "DDR Get Result": {
-        "result": "PASS"
+        "expected_status": "PASS",
+        "score_min": -9999,
+        "score_max": 9999
     },
+
     "PCIe Iperf Test": {
-        "required_ports": [1, 2, 3],
-        "tx_min": 400,
-        "rx_min": 200
+        "pcie_limits": {
+            "PORT_0": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 400, "high": 1000},
+                "RX":   {"low": 200, "high": 1000}
+            },
+            "PORT_1": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 400, "high": 1000},
+                "RX":   {"low": 200, "high": 1000}
+            },
+            "PORT_2": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 0, "high": 0},
+                "RX":   {"low": 0, "high": 0}
+            },
+            "PORT_3": {
+                "PING": {"low": "WEBSOCKET", "high": "WEBSOCKET"},
+                "TX":   {"low": 0, "high": 0},
+                "RX":   {"low": 0, "high": 0}
+            }
+        }
     },
+
     "USB3_3 Iperf Test": {
-        "ping": "PINGOK",
-        "tx_min": 350,
-        "tx_max": 1000,
-        "rx_min": 200,
-        "rx_max": 1000
+        "usb_limits": {
+            "PORT_0": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 0, "high": 0},
+                "RX":   {"low": 0, "high": 0}
+            },
+            "PORT_1": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 350, "high": 1000},
+                "RX":   {"low": 200, "high": 1000}
+            },
+            "PORT_2": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 0, "high": 0},
+                "RX":   {"low": 0, "high": 0}
+            },
+            "PORT_3": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 0, "high": 0},
+                "RX":   {"low": 0, "high": 0}
+            }
+        }
     },
+
+    "USB3_2 Iperf Test": {
+        "usb_limits": {
+            "PORT_0": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 300, "high": 480},
+                "RX":   {"low": 200, "high": 480}
+            },
+            "PORT_1": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 300, "high": 480},
+                "RX":   {"low": 200, "high": 480}
+            },
+            "PORT_2": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 300, "high": 480},
+                "RX":   {"low": 200, "high": 480}
+            },
+            "PORT_3": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 300, "high": 480},
+                "RX":   {"low": 200, "high": 480}
+            }
+        }
+    },
+
     "USB2 Iperf Test": {
-        "ping": "PINGOK",
-        "tx_min": 50,
-        "tx_max": 100,
-        "rx_min": 50,
-        "rx_max": 100
+        "usb_limits": {
+            "PORT_0": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 50, "high": 100},
+                "RX":   {"low": 50, "high": 100}
+            },
+            "PORT_1": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 50, "high": 100},
+                "RX":   {"low": 50, "high": 100}
+            },
+            "PORT_2": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 50, "high": 100},
+                "RX":   {"low": 50, "high": 100}
+            },
+            "PORT_3": {
+                "PING": {"low": "PINGOK", "high": "PINGOK"},
+                "TX":   {"low": 50, "high": 1000},
+                "RX":   {"low": 50, "high": 100}
+            }
+        }
     },
+
     "EMMC-8bit": {
         "bus_width": "3",
         "clock": "200000000",
         "timing": "10"
     },
+
     "EMMC-4bit": {
         "result": "PASS",
         "bus_width": "2",
         "clock": "200000000",
         "timing": "9"
     },
+
     "SDIO": {
         "result": "PASS",
         "bus_width": "2",
         "clock": "50000000",
         "timing": "2"
     },
+
     "UART": {
-        "expected_ports": [
-            "PORT 0 CB -> AB",
-            "PORT 0 AB -> CB",
-            "PORT 1 CB -> AB",
-            "PORT 1 AB -> CB",
-            "PORT 3 CB -> AB",
-            "PORT 3 AB -> CB"
-        ]
+        "expected_result": "PASS"
     },
+
+    "SPI": {
+        "expected_result": "PASS"
+    },
+
+    "I2S": {
+        "score_min": 999,
+        "score_max": 1001,
+        "expected_result": "PASS"
+    },
+
+    "I2C": {
+        "temperature_min": -45,
+        "temperature_max": 110
+    },
+
+    "SMBus": {
+        "temperature_min": -45,
+        "temperature_max": 110
+    },
+
+    "LPC": {
+        "expected_result": "PASS"
+    },
+
+    "CSI": {
+        "expected_result": "PASS"
+    },
+
+    "AB Mrcthreshold": {
+        "value_min": 0,
+        "value_max": 2
+    },
+
+    "AB CPU TEMP": {
+        "temperature_min": -9999,
+        "temperature_max": 9999
+    },
+
+    "AB CPU Temp": {
+        "temperature_min": -9999,
+        "temperature_max": 9999
+    },
+
+    "AB Erase DID": {
+        "expected_result": "PASSED"
+    },
+
+    "SATA Get port 1": {
+        "expected_result": "PASS"
+    },
+
+    "SATA Get Port 2": {
+        "expected_result": "PASS"
+    },
+
+    "USB3_3 number of port": {
+        "expected_result": "COMMAND ACCEPT"
+    },
+
+    "USB2 number of port": {
+        "expected_result": "COMMAND ACCEPT"
+    },
+
+    "PCIe number of port": {
+        "expected_result": "COMMAND ACCEPT"
+    },
+
+    "USB3_2 number of port": {
+        "expected_result": "COMMAND ACCEPT"
+    },
+
+    "HDMI": {
+        "expected_result": "COMMAND ACCEPT"
+    },
+
+    "PWM": {
+        "expected_result": "CONFIGURATION"
+    },
+
     "GPIO": {
         "GROUP1_CB_ORDER HIGH_0-15": "1111111111111101",
         "GROUP1_CB_ORDER LOW_0-15": "0000000000000000",
@@ -109,80 +309,22 @@
         "GROUP3_AB_ORDER HIGH_32-41": "1111111111",
         "GROUP3_AB_ORDER LOW_32-41": "0000010000"
     },
-    "I2S": {
-        "result": "PASS",
-        "score": "999"
-    },
-    "SPI": {
-        "type": "exists"
-    },
-    "I2C": {
-        "temperature_min": 15,
-        "temperature_max": 60
-    },
+
     "ADC": {
-        "ADC0_CH0_MIN": 1.71,
-        "ADC0_CH0_MAX": 1.89,
+        "ADC0_CH0": {"low": 1.71,   "high": 1.89},
+        "ADC0_CH1": {"low": 3.135,  "high": 3.465},
+        "ADC0_CH2": {"low": 0.95,   "high": 1.10},
+        "ADC0_CH3": {"low": 1.71,   "high": 1.89},
+        "ADC0_CH4": {"low": 1.178,  "high": 1.302},
+        "ADC0_CH5": {"low": 0.945,  "high": 1.045},
+        "ADC0_CH6": {"low": 1.05,   "high": 1.15},
+        "ADC0_CH7": {"low": 3.135,  "high": 3.465},
 
-        "ADC0_CH1_MIN": 3.135,
-        "ADC0_CH1_MAX": 3.465,
-
-        "ADC0_CH2_MIN": 0.95,
-        "ADC0_CH2_MAX": 1.10,
-
-        "ADC0_CH3_MIN": 1.71,
-        "ADC0_CH3_MAX": 1.89,
-
-        "ADC0_CH4_MIN": 1.178,
-        "ADC0_CH4_MAX": 1.302,
-
-        "ADC0_CH5_MIN": 0.945,
-        "ADC0_CH5_MAX": 1.045,
-
-        "ADC0_CH6_MIN": 1.05,
-        "ADC0_CH6_MAX": 1.15,
-
-        "ADC0_CH7_MIN": 3.135,
-        "ADC0_CH7_MAX": 3.465
-    },
-    "SMBus": {
-        "result": "PASS"
-    },
-    "LPC": {
-        "result": "PASS"
-    },
-    "AB Mrcthreshold": {
-        "value": "0,2"
-    },
-    "CSI": {
-        "result": "PASS"
-    },
-    "CBHW Version": {
-        "expected": "G"
-    },
-
-    "CBSW Version": {
-        "expected": "v1.0.4.25 20201225"
-    },
-
-    "ABHW Version": {
-        "expected": "H"
-    },
-
-    "ABSW Version": {
-        "expected": "V0.0.5.5 20210219"
-    },
-
-    "AB CPU TEMP": {
-        "temperature_min": 20,
-        "temperature_max": 95
-    },
-    "AB Erase DID": {
-        "expected": "exists"
-    },
-
-    "HDMI": {
-        "result": "PASS"
+        "ADC1_CH0": {"low": 0.0,     "high": 9999.0},
+        "ADC1_CH1": {"low": 0.0,     "high": 9999.0},
+        "ADC1_CH2": {"low": 0.0,     "high": 9999.0},
+        "ADC1_CH3": {"low": 0.0,     "high": 3.465},
+        "ADC1_CH4": {"low": 3.135,   "high": 3.465},
+        "ADC1_CH5": {"low": -9999.0, "high": 9999.0}
     }
-
 }

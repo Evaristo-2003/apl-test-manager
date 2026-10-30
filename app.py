@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Aplicación principal - APL Test Manager"""
+"""Aplicación principal - ATS (Automatic Test System)"""
 
+import ctypes
 import sys
 import json
 from pathlib import Path
@@ -10,11 +11,13 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QTextEdit, QPushButton,QTabWidget
 )
+from core.repositories.project_repository import ProjectRepository
 from core.services.serial_service import SerialService
 from core.services.test_service import TestService
 from core.repositories.button_repository import ButtonRepository
 from core.ui.styles import AppStyles
 from core.ui.workers.test_worker import run_test_in_thread
+from core.ui.app_icon import get_app_icon
 from controllers.test_controller import TestController
 from core.ui.dashboard_view import DashboardView
 from core.ui.view.runner_view import RunnerView
@@ -40,15 +43,17 @@ from core.ui.view.results_view import (
 from core.ui.view.analysis_view import (
     AnalysisView
 )
+
 class MainWindow(QMainWindow):
     """Ventana principal de la aplicación"""
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("APL Test Manager v2.0")
+        self.setWindowTitle("Automatic Test System")
         self.resize(1280, 800)
         
         # Inicializar servicios
+        self.setWindowIcon(get_app_icon())
         self.serial_service = SerialService()
         self.fixture_controller = FixtureController(
             self.serial_service,
@@ -548,6 +553,15 @@ class MainWindow(QMainWindow):
 
         new_sfc = sfc.strip()
 
+        source = (
+            self.sapme_widget
+            .get_source()
+        )
+        print(
+            f"[SOURCE] {source}"
+        )
+        app_state.source = source
+
         previous_sfc = getattr(
             app_state,
             "current_sfc",
@@ -555,7 +569,11 @@ class MainWindow(QMainWindow):
         )
 
         print(
-            f"LOAD SAPME: {new_sfc}"
+            f"LOAD SOURCE: {source}"
+        )
+
+        print(
+            f"LOAD SFC: {new_sfc}"
         )
 
         #
@@ -584,12 +602,42 @@ class MainWindow(QMainWindow):
         self.sapme_widget.set_loading()
 
         #
-        # Intentar carga SAPME
+        # Cargar según origen
         #
-        success = self.sapme_service.load_sfc(
-            new_sfc
-        )
+        if source == "SAPME":
 
+            success = (
+                self.sapme_service
+                .load_sfc(
+                    new_sfc
+                )
+            )
+
+        else:
+
+            project_repo = ProjectRepository()
+
+            app_state.current_sfc = new_sfc
+
+            app_state.project = (
+                project_repo.get_project_from_sfc(
+                    new_sfc
+                )
+            )
+
+            app_state.operation = "OP_FUNC_PCBA"
+
+            app_state.sapme_ready = False
+
+            app_state.tests_loaded = 0
+
+            app_state.last_sync = datetime.now()
+
+            success = True
+
+        #
+        # Resultado
+        #
         if success:
 
             app_state.current_sfc = new_sfc
@@ -606,7 +654,6 @@ class MainWindow(QMainWindow):
             self.sapme_widget.set_project(
                 app_state.project
             )
-
 
             self.fixture_controller.set_connect_enabled(
                 True
@@ -695,15 +742,16 @@ from PySide6.QtGui import (
 
 def main():
     """Punto de entrada principal"""
-
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+        "ATS.APLTestSystem.1.0"
+    )
     # Crear directorios necesarios
     Path("logs").mkdir(
         exist_ok=True
     )
 
-    app = QApplication(
-        sys.argv
-    )
+    app = QApplication(sys.argv)
+    app.setWindowIcon(get_app_icon())
 
     #
     # Estilo uniforme

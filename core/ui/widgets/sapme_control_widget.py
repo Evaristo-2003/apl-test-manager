@@ -11,9 +11,8 @@ from PySide6.QtWidgets import (
 )
 
 from PySide6.QtCore import Qt
-
+from PySide6.QtWidgets import QComboBox
 from PySide6.QtGui import QPixmap
-
 from core.ui.styles import AppStyles
 from core.utils.resource_path import resource_path
 
@@ -57,7 +56,7 @@ class SapmeControlWidget(QGroupBox):
         }
         """)
 
-        sfc_panel.setFixedWidth(460)
+        sfc_panel.setFixedWidth(480)
 
         sfc_panel_layout = QHBoxLayout(
             sfc_panel
@@ -105,18 +104,46 @@ class SapmeControlWidget(QGroupBox):
         }
         """)
 
-        sfc_panel_layout.addWidget(
-            self.sfc_input
+        sfc_panel_layout.addWidget(self.sfc_input)
+        #
+        # SOURCE COMBO
+        #
+        self.source_combo = QComboBox()
+
+        self.source_combo.addItems([
+            "SAPME",
+            "LOCAL"
+        ])
+
+        self.source_combo.setFixedWidth(
+            80
         )
 
+        self.source_combo.setStyleSheet("""
+        QComboBox {
+
+            background: white;
+
+            border: 1px solid #D0D0D0;
+
+            border-radius: 0px;
+
+            padding: 4px 8px;
+
+            font-family: 'Segoe UI';
+
+            font-size: 9pt;
+        }
+        """)
+        sfc_panel_layout.addWidget(self.source_combo)
         #
         # LOAD BUTTON
         #
         self.btn_load = QPushButton(
-            "LOAD SAPME"
+            "LOAD"
         )
 
-        self.btn_load.setFixedWidth(130)
+        self.btn_load.setFixedWidth(80)
         self.btn_load.setFixedHeight(32)
 
         self.btn_load.setStyleSheet(
@@ -402,3 +429,6 @@ class SapmeControlWidget(QGroupBox):
         self.lbl_info.setText("-")
 
         self.lbl_project_logo.clear()
+    def get_source(self):
+
+        return self.source_combo.currentText()

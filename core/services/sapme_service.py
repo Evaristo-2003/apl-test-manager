@@ -8,7 +8,12 @@ from core.repositories.project_repository import ProjectRepository
 import re
 from core.state.app_state import app_state
 
+DEBUG = False
+def debug_print(*args, **kwargs):
 
+    if DEBUG:
+
+        print(*args, **kwargs)
 class SapmeService:
 
     def __init__(self):
@@ -44,7 +49,7 @@ class SapmeService:
         #
         self.client = SapMeClient()
 
-        print(
+        debug_print(
             f"Loading SAPME for {sfc}"
         )
 
@@ -145,9 +150,9 @@ class SapmeService:
         )
         import json
 
-        print("\n========== SAPME LIMITS ==========\n")
+        debug_print("\n========== SAPME LIMITS ==========\n")
 
-        print(
+        debug_print(
             json.dumps(
                 limits,
                 indent=4,
@@ -155,7 +160,7 @@ class SapmeService:
             )
         )
 
-        print("\n===============================\n")
+        debug_print("\n===============================\n")
 ##
         traceability = limits.get(
             "_TRACEABILITY",

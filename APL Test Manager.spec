@@ -1,11 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets', 'assets')],
+    datas=[
+        ('assets', 'assets'),
+        ('buttons.json', '.'),
+        ('limits.json', '.'),
+        ('projects.json', '.'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -14,14 +18,17 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-pyz = PYZ(a.pure)
+
+pyz = PYZ(
+    a.pure
+)
 
 exe = EXE(
     pyz,
     a.scripts,
     [],
     exclude_binaries=True,
-    name='APL Test Manager',
+    name='ATS',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -32,7 +39,9 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='assets/icon.ico',
 )
+
 coll = COLLECT(
     exe,
     a.binaries,
@@ -40,5 +49,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='APL Test Manager',
+    name='ATS',
 )

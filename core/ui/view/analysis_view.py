@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 
 from core.adapters.serial_adapter import SerialAdapter
 from core.ui.styles import AppStyles
+from core.ui.workers.fixture_worker import FixtureWorker
 
 
 class LogSignals(QObject):
@@ -647,32 +648,53 @@ class AnalysisView(QWidget):
     # ============================================================
     # POWER OFF CB
     # ============================================================
-
     def power_off_cb(self):
-
         if not self.cb_adapter.is_connected():
-
-            self.cb_console.append(
-                "\n[CB NOT CONNECTED]\n"
-            )
-
+            self.cb_console.append("\n[CB NOT CONNECTED]\n")
             return
-
-        self.cb_console.append(
-            "\n[POWER OFF COMMAND SENT]\n"
-        )
-
-        response = (
+ 
+        if not self.ab_adapter.is_connected():
+            self.cb_console.append("\n[AB NOT CONNECTED, CANNOT ERASE DID]\n")
+            return
+ 
+        self.cb_console.append("\n[ERASE DID EN PROGRESO...]\n")
+        self._power_off_response = ""
+ 
+        def process_power_off():
+            # 1. Mandar erase did a la AB y esperar el prompt de Linux
+            erase_response = self.ab_adapter.execute_command_until(
+                "websocket_test.sh erasedid",
+                "root@harman-si-intel-plk:~#", #Esperamos el prompt en lugar del SUCCESS
+                60 
+            )
+            self._power_off_response = erase_response
+ 
+            # 2. Mandar el power off a la CB inmediatamente después
             self.cb_adapter.execute_command(
                 "websocket_test.sh powerswitch 0"
             )
-        )
-
-        if response:
-
-            self.cb_console.append(
-                response
-            )
+ 
+        worker = FixtureWorker(process_power_off)
+ 
+        def on_finished(success):
+            # Si la AB respondió, lo mostramos
+            if self._power_off_response:
+                self.ab_console.append(self._power_off_response)
+ 
+            self.cb_console.append("\n[ERASE DID FINALIZADO]\n")
+            self.cb_console.append("\n[POWER OFF COMMAND SENT TO CB]\n")
+ 
+        def on_error(error_msg):
+            self.cb_console.append(f"\n[ERROR EN EL HILO]: {error_msg}\n")
+ 
+        worker.signals.finished.connect(on_finished)
+        worker.signals.error.connect(on_error)
+ 
+        from PySide6.QtCore import QThreadPool
+        QThreadPool.globalInstance().start(worker)
+ 
+ 
+ 
     # ============================================================
     # CLEAR TERMINAL
     # ============================================================

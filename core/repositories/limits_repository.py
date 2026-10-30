@@ -7,13 +7,17 @@ from typing import Any
 from core.state.app_state import app_state
 from core.utils.resource_path import resource_path
 logger = logging.getLogger(__name__)
+DEBUG = False
+def debug_print(*args, **kwargs):
 
+    if DEBUG:
 
+        print(*args, **kwargs)
 class LimitsRepository:
     """Carga y consulta límites de pruebas"""
     
     def __init__(self, config_path: str = "limits.json"):
-        print(resource_path)
+        debug_print(resource_path)
         self.config_path = resource_path(
     config_path
 )
@@ -148,13 +152,15 @@ class LimitsRepository:
         self,
         test_name: str
     ) -> dict[str, Any] | None:
-        print(
+        debug_print(
             f"[LIMITS] Solicitando límites para: {test_name}"
         )
         #
         # SAPME primero
         #
-
+        debug_print(
+            f"SAPME_READY = {app_state.sapme_ready}"
+        )
         if (
             app_state.sapme_ready
             and
@@ -197,8 +203,11 @@ class LimitsRepository:
         #
         # SAPME tiene prioridad
         #
-        print(
+        debug_print(
             f"[SAPME] Solicitando límites para: {test_name}"
+        )
+        debug_print(
+            f"SAPME_READY = {app_state.sapme_ready}"
         )
         if (
             app_state.sapme_ready
@@ -220,7 +229,7 @@ class LimitsRepository:
 
                 if adc:
 
-                    print(
+                    debug_print(
                         "[SAPME] ADC solicitado"
                     )
 
@@ -229,7 +238,7 @@ class LimitsRepository:
             # Kernel Version
             #
 
-            print(
+            debug_print(
                 f"[SAPME] Solicitando límites para: {test_name}"
             )
 
@@ -262,7 +271,7 @@ class LimitsRepository:
 
             if test_name == "CBHW Version":
 
-                print(
+                debug_print(
                     "[SAPME] CBHW Version solicitado"
                 )
 
@@ -277,7 +286,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         f"[SAPME] Valor encontrado: {data['high']}"
                     )
 
@@ -300,7 +309,7 @@ class LimitsRepository:
 
             if test_name == "CBSW Version":
 
-                print(
+                debug_print(
                     "[SAPME] CBSW Version solicitado"
                 )
 
@@ -315,7 +324,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         f"[SAPME] Valor encontrado: {data['high']}"
                     )
 
@@ -338,7 +347,7 @@ class LimitsRepository:
 
             if test_name == "ABHW Version":
 
-                print(
+                debug_print(
                     "[SAPME] ABHW Version solicitado"
                 )
 
@@ -353,7 +362,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         f"[SAPME] Valor encontrado: {data['high']}"
                     )
 
@@ -376,7 +385,7 @@ class LimitsRepository:
 
             if test_name == "ABSW Version":
 
-                print(
+                debug_print(
                     "[SAPME] ABSW Version solicitado"
                 )
 
@@ -391,7 +400,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         f"[SAPME] Valor encontrado: {data['high']}"
                     )
 
@@ -428,7 +437,7 @@ class LimitsRepository:
 
                 if voltage and current:
 
-                    print(
+                    debug_print(
                         "[SAPME] cursens_12vtoj6 solicitado"
                     )
 
@@ -467,7 +476,7 @@ class LimitsRepository:
 
                 if voltage and current:
 
-                    print(
+                    debug_print(
                         "[SAPME] cursens_hsbridge solicitado"
                     )
 
@@ -506,7 +515,7 @@ class LimitsRepository:
 
                 if temp and hum:
 
-                    print(
+                    debug_print(
                         "[SAPME] Thermal Port 0 solicitado"
                     )
 
@@ -542,7 +551,7 @@ class LimitsRepository:
 
                 if temp:
 
-                    print(
+                    debug_print(
                         "[SAPME] Thermal Port 4 solicitado"
                     )
 
@@ -577,7 +586,7 @@ class LimitsRepository:
 
                 if temp:
 
-                    print(
+                    debug_print(
                         "[SAPME] AB CPU TEMP solicitado"
                     )
 
@@ -603,7 +612,7 @@ class LimitsRepository:
 
                 if pcie:
 
-                    print(
+                    debug_print(
                         "[SAPME] PCIe Iperf Test solicitado"
                     )
 
@@ -624,7 +633,7 @@ class LimitsRepository:
 
                 if usb:
 
-                    print(
+                    debug_print(
                         "[SAPME] USB3_3 Iperf Test solicitado"
                     )
 
@@ -645,7 +654,7 @@ class LimitsRepository:
 
                 if usb:
 
-                    print(
+                    debug_print(
                         "[SAPME] USB2 Iperf Test solicitado"
                     )
 
@@ -666,7 +675,7 @@ class LimitsRepository:
 
                 if usb:
 
-                    print(
+                    debug_print(
                         "[SAPME] USB3_2 Iperf Test solicitado"
                     )
 
@@ -699,7 +708,7 @@ class LimitsRepository:
 
                 if bw and clk and timing:
 
-                    print(
+                    debug_print(
                         "[SAPME] EMMC-8bit solicitado"
                     )
 
@@ -726,7 +735,7 @@ class LimitsRepository:
 
                 if uart:
 
-                    print(
+                    debug_print(
                         "[SAPME] UART solicitado"
                     )
 
@@ -745,7 +754,7 @@ class LimitsRepository:
 
                 if spi:
 
-                    print(
+                    debug_print(
                         "[SAPME] SPI solicitado"
                     )
 
@@ -771,7 +780,7 @@ class LimitsRepository:
 
                 if i2s:
 
-                    print(
+                    debug_print(
                         "[SAPME] I2S solicitado"
                     )
 
@@ -792,7 +801,7 @@ class LimitsRepository:
 
                 if csi:
 
-                    print(
+                    debug_print(
                         "[SAPME] CSI solicitado"
                     )
 
@@ -811,7 +820,7 @@ class LimitsRepository:
 
                 if gpio:
 
-                    print(
+                    debug_print(
                         "[SAPME] GPIO solicitado"
                     )
 
@@ -858,7 +867,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         "[SAPME] SMBus solicitado"
                     )
 
@@ -887,7 +896,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         "[SAPME] LPC solicitado"
                     )
 
@@ -913,7 +922,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         "[SAPME] AB Mrcthreshold solicitado"
                     )
 
@@ -946,7 +955,7 @@ class LimitsRepository:
 
                 if status and value:
 
-                    print(
+                    debug_print(
                         "[SAPME] DDR Get Result solicitado"
                     )
 
@@ -978,7 +987,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         "[SAPME] Check PCB ID solicitado"
                     )
 
@@ -1005,7 +1014,7 @@ class LimitsRepository:
 
                 if cpu and system:
 
-                    print(
+                    debug_print(
                         "[SAPME] CPU info solicitado"
                     )
 
@@ -1063,7 +1072,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         "[SAPME] Check ABL solicitado"
                     )
 
@@ -1202,7 +1211,7 @@ class LimitsRepository:
 
                 if bw and clk and timing:
 
-                    print(
+                    debug_print(
                         "[SAPME] SDIO solicitado"
                     )
 
@@ -1235,7 +1244,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         "[SAPME] AB Erase DID solicitado"
                     )
 
@@ -1310,7 +1319,7 @@ class LimitsRepository:
 
                 if data:
 
-                    print(
+                    debug_print(
                         f"[SAPME] {test_name} solicitado"
                     )
 
@@ -1329,3 +1338,10 @@ class LimitsRepository:
                 return {
                     "expected_result": "CONFIGURATION"
                 }
+
+            #
+            # Fallback LOCAL
+            #
+        return self._limits.get(
+            test_name
+        )

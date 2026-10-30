@@ -1,0 +1,6523 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="utf-8">
+
+<title> TEST REPORT</title>
+
+<style>
+.subsequence-title {
+    margin-top: 15px;
+    margin-left: 20px;
+
+    background: #F4F7F9;
+
+    padding: 6px 10px;
+
+    border-left: 5px solid #5B9BD5;
+
+    font-weight: bold;
+
+    color: #1F2937;
+}
+.test-summary {
+    background: #F4F7F9;
+    border-left: 5px solid #5B9BD5;
+    padding: 8px 12px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+.subsequence-content {
+    margin-left: 25px;
+}
+body {
+    font-family: Segoe UI, Arial, sans-serif;
+    margin: 20px;
+    background: white;
+}
+
+h1 {
+    border-bottom: 2px solid #404040;
+    padding-bottom: 10px;
+}
+
+.summary-table {
+    border-collapse: collapse;
+    width: 700px;
+}
+
+.summary-table td,
+.summary-table th {
+    border: 1px solid #CFCFCF;
+    padding: 8px;
+}
+
+.summary-table th {
+    background: #E9EEF2;
+}
+
+.test-block {
+    margin-top: 25px;
+}
+
+.test-title {
+    background: #BFD5E1;
+    padding: 8px;
+    font-weight: bold;
+    border: 1px solid #A9BEC8;
+    font-size: 14px;
+}
+
+.info-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.adc-summary {
+    background: #F4F7F9;
+    border-left: 5px solid #5B9BD5;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+.info-table td {
+    border: 1px solid #D0D0D0;
+    padding: 6px;
+}
+
+.label {
+    width: 250px;
+    font-weight: bold;
+    background: #EFEFEF;
+}
+
+.pass {
+    background: #C6EFCE;
+    color: #006100;
+    font-weight: bold;
+}
+
+.fail {
+    background: #FFC7CE;
+    color: #9C0006;
+    font-weight: bold;
+}
+
+.skipped {
+    background: #E7E6E6;
+    color: #404040;
+    font-weight: bold;
+}
+
+.section-title {
+    background: #DDEAF2;
+    padding: 6px;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    border: 1px solid #C4D2DA;
+    font-weight: bold;
+}
+
+.detail-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.detail-table td {
+    border: 1px solid #D0D0D0;
+    padding: 6px;
+}
+.detail-table th {
+    border: 1px solid #D0D0D0;
+    padding: 6px;
+    background: #E9EEF2;
+    font-weight: bold;
+    text-align: center;
+}
+.detail-label {
+    width: 250px;
+    background: #EFEFEF;
+    font-weight: bold;
+}
+.header-container {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 25px;
+
+    border-bottom: 2px solid #404040;
+
+    padding-bottom: 10px;
+}
+
+.header-info {
+
+    flex: 1;
+}
+
+.header-title {
+
+    font-size: 28px;
+
+    font-weight: bold;
+
+    color: #1F2937;
+
+    margin-bottom: 10px;
+}
+
+.header-project {
+
+    font-size: 18px;
+
+    font-weight: 600;
+
+    color: #404040;
+
+    margin-bottom: 6px;
+}
+
+.header-logo {
+
+    width: 220px;
+
+    text-align: right;
+}
+.raw-box {
+    background: #F7F7F7;
+    border: 1px solid #D5D5D5;
+    padding: 8px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: Consolas;
+    font-size: 12px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header-container">
+
+    <div class="header-info">
+
+        <div class="header-title">
+            TEST MANAGER REPORT
+        </div>
+
+        <div class="header-project">
+            Project: STELLANTIS HIGH
+        </div>
+
+    </div>
+
+    <div class="header-logo">
+
+        
+<img
+    src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAADwAAAAhwBAMAAABikNZBAAAAAXNSR0IArs4c6QAAAA9QTFRFR3BMJDiCJDiCJDiCJDiCTy+BvQAAAAR0Uk5TADh/xkNL0A4AAEa7SURBVHja7MGBAAAAAICg/akXqQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGYPDgQAAAAAgPxfG0FVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVYU9OBAAAAAAAPJ/bQRVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV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"
+    style="
+        max-width:180px;
+        max-height:70px;
+    "
+>
+
+
+    </div>
+
+</div>
+
+<table class="summary-table">
+
+<tr>
+<th colspan="2">
+Traceability
+</th>
+</tr>
+
+<tr>
+<td>SFC</td>
+<td>420034301962040304106521</td>
+</tr>
+
+<tr>
+<td>Operation</td>
+<td>OP_FUNC_PCBA</td>
+</tr>
+
+<tr>
+<td>Date</td>
+<td>2026-10-21 13:46:18</td>
+</tr>
+
+</table>
+
+<br>
+
+<table class="summary-table">
+
+<tr>
+<th>Total</th>
+<th>PASS</th>
+<th>FAIL</th>
+<th>SKIPPED</th>
+</tr>
+
+<tr>
+<td>50</td>
+<td>47</td>
+<td>3</td>
+<td>0</td>
+</tr>
+
+</table>
+
+
+<div class="test-block">
+
+<div class="test-title">
+CBHW Version
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3066 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+PCB Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+G
+</td>
+
+<td>
+G
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+CBSW Version
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3066 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+PCB Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+V1.0.4.25 20201225
+</td>
+
+<td>
+V1.0.4.25 20201225
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+PCIe Iperf Test
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 26218 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="section-title">
+Measured Data
+</div>
+
+<div class="subsequence-title">
+PORT_0
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+400.0
+</td>
+
+<td>
+618.0
+</td>
+
+<td>
+1000.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+200.0
+</td>
+
+<td>
+284.0
+</td>
+
+<td>
+1000.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_1
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+400.0
+</td>
+
+<td>
+627.0
+</td>
+
+<td>
+1000.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+200.0
+</td>
+
+<td>
+284.0
+</td>
+
+<td>
+1000.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_2
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+628.0
+</td>
+
+<td>
+0.0
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+284.0
+</td>
+
+<td>
+0.0
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_3
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+WEBSOCKET
+</td>
+
+<td>
+PINGNG
+</td>
+
+<td>
+WEBSOCKET
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+N/A
+</td>
+
+<td>
+NULL
+</td>
+
+<td>
+N/A
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+N/A
+</td>
+
+<td>
+NULL
+</td>
+
+<td>
+N/A
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+Thermal Port 0
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3077 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+Thermal Measurements
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Temperature
+</td>
+
+<td>
+
+</td>
+
+<td>
+30.717 °C
+</td>
+
+<td>
+
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Humidity
+</td>
+
+<td>
+
+</td>
+
+<td>
+31.055 %
+</td>
+
+<td>
+
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+cursens_12vtoj6
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3074 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+Current / Voltage Measurements
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Voltage
+</td>
+
+<td>
+9.5
+</td>
+
+<td>
+11.694
+</td>
+
+<td>
+13.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Current
+</td>
+
+<td>
+-999.0
+</td>
+
+<td>
+0.403
+</td>
+
+<td>
+999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+cursens_hsbridge
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3082 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+Current / Voltage Measurements
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Voltage
+</td>
+
+<td>
+9.5
+</td>
+
+<td>
+11.69
+</td>
+
+<td>
+13.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Current
+</td>
+
+<td>
+-999.0
+</td>
+
+<td>
+1.735
+</td>
+
+<td>
+999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+SATA Set port 1
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3045 ms
+
+</div>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+Check PCB ID
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3073 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+PCB Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+32FF
+</td>
+
+<td>
+32FF
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+cursens_ab3v3
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3075 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+Current / Voltage Measurements
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Voltage
+</td>
+
+<td>
+3.135
+</td>
+
+<td>
+3.334
+</td>
+
+<td>
+3.465
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Current
+</td>
+
+<td>
+0.1
+</td>
+
+<td>
+1.996
+</td>
+
+<td>
+4.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+cursens_ab5v
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3078 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+Current / Voltage Measurements
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Voltage
+</td>
+
+<td>
+4.75
+</td>
+
+<td>
+4.979
+</td>
+
+<td>
+5.25
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Current
+</td>
+
+<td>
+-999.0
+</td>
+
+<td>
+1.445
+</td>
+
+<td>
+999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+cursens_12vtoab
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3081 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+Current / Voltage Measurements
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Voltage
+</td>
+
+<td>
+9.5
+</td>
+
+<td>
+11.679
+</td>
+
+<td>
+13.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Current
+</td>
+
+<td>
+-999.0
+</td>
+
+<td>
+1.428
+</td>
+
+<td>
+999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+ADC
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 7250 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+1
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh adc 0
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 1
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> PASS
+&nbsp;&nbsp;|&nbsp;&nbsp;
+ADC0 OK (SAPME)
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+ADC0
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+ADC0_CH0
+</td>
+
+<td>
+1.71
+</td>
+
+<td>
+1.81377
+</td>
+
+<td>
+1.89
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC0_CH1
+</td>
+
+<td>
+3.135
+</td>
+
+<td>
+3.322241
+</td>
+
+<td>
+3.465
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC0_CH2
+</td>
+
+<td>
+0.95
+</td>
+
+<td>
+1.050024
+</td>
+
+<td>
+1.1
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC0_CH3
+</td>
+
+<td>
+1.71
+</td>
+
+<td>
+1.812769
+</td>
+
+<td>
+1.89
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC0_CH4
+</td>
+
+<td>
+1.178
+</td>
+
+<td>
+1.239209
+</td>
+
+<td>
+1.302
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC0_CH5
+</td>
+
+<td>
+0.945
+</td>
+
+<td>
+1.000977
+</td>
+
+<td>
+1.045
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC0_CH6
+</td>
+
+<td>
+1.05
+</td>
+
+<td>
+1.110083
+</td>
+
+<td>
+1.15
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC0_CH7
+</td>
+
+<td>
+3.135
+</td>
+
+<td>
+3.315234
+</td>
+
+<td>
+3.465
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+2
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh adc 1
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 2
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> PASS
+&nbsp;&nbsp;|&nbsp;&nbsp;
+ADC1 OK (SAPME)
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+ADC1
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+ADC1_CH0
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+0.916895
+</td>
+
+<td>
+9999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC1_CH1
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+1.221191
+</td>
+
+<td>
+9999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC1_CH2
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+0.001001
+</td>
+
+<td>
+9999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC1_CH3
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+0.475464
+</td>
+
+<td>
+3.465
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC1_CH4
+</td>
+
+<td>
+3.135
+</td>
+
+<td>
+3.345264
+</td>
+
+<td>
+3.465
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+ADC1_CH5
+</td>
+
+<td>
+-9999.0
+</td>
+
+<td>
+2.838769
+</td>
+
+<td>
+9999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+Check ABL
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3079 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+PCB Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+2027
+</td>
+
+<td>
+2027
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+ABHW Version
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3053 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+PCB Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+H
+</td>
+
+<td>
+H
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+ABSW Version
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3076 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+PCB Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+V0.0.5.5 20210219
+</td>
+
+<td>
+V0.0.5.5 20210219
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+AB CPU TEMP
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3086 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+Message
+</td>
+
+<td>
+CPU Temp OK: 44.0°C
+</td>
+</tr>
+
+</table>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+value
+</td>
+
+<td>
+44
+</td>
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+Thermal Port 4
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3075 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+Thermal Measurements
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Temperature
+</td>
+
+<td>
+
+</td>
+
+<td>
+22.882 °C
+</td>
+
+<td>
+
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Humidity
+</td>
+
+<td>
+
+</td>
+
+<td>
+45.905 %
+</td>
+
+<td>
+
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+Kernel Version
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3134 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+PCB Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+4.1.27
+</td>
+
+<td>
+4.1.27
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+CPU info
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3344 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+Message
+</td>
+
+<td>
+CPU INFO OK (SAPME)
+</td>
+</tr>
+
+</table>
+
+<div class="subsequence-title">
+CPU Information
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+
+<tr>
+
+<td>
+Vendor Id
+</td>
+
+<td>
+GenuineIntel
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Cpu Family
+</td>
+
+<td>
+6
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Model
+</td>
+
+<td>
+92
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Model Name
+</td>
+
+<td>
+Intel(R)Atom(TM)ProcessorA3960@1.90GHz
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Cpu Cores
+</td>
+
+<td>
+10
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Cpu Mhz
+</td>
+
+<td>
+2299.964
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Cpu Max Mhz
+</td>
+
+<td>
+2400.0000
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Cpu Min Mhz
+</td>
+
+<td>
+800.0000
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Bogomips
+</td>
+
+<td>
+3763.20
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Virtualization
+</td>
+
+<td>
+VT-x
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+L1D Cache
+</td>
+
+<td>
+24K
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+L1I Cache
+</td>
+
+<td>
+32K
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+L2 Cache
+</td>
+
+<td>
+1024K
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+DDR Set Test
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3052 ms
+
+</div>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+PCIe number of port
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3211 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+USB3_3 number of port
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3328 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+USB3_3 Iperf Test
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="fail">FAIL</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 26184 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="section-title">
+Measured Data
+</div>
+
+<div class="subsequence-title">
+PORT_1
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+350.0
+</td>
+
+<td>
+584.0
+</td>
+
+<td>
+1000.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+200.0
+</td>
+
+<td>
+279.0
+</td>
+
+<td>
+1000.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_2
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+577.0
+</td>
+
+<td>
+0.0
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+340.0
+</td>
+
+<td>
+0.0
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_3
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+587.0
+</td>
+
+<td>
+0.0
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+347.0
+</td>
+
+<td>
+0.0
+</td>
+
+<td class="skipped">
+N/A
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+USB3 to USB2
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3039 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+USB2 number of port
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3317 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+USB2 Iperf Test
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 32876 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="section-title">
+Measured Data
+</div>
+
+<div class="subsequence-title">
+PORT_0
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+50.0
+</td>
+
+<td>
+94.5
+</td>
+
+<td>
+100.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+50.0
+</td>
+
+<td>
+94.7
+</td>
+
+<td>
+100.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_1
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+50.0
+</td>
+
+<td>
+94.5
+</td>
+
+<td>
+100.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+50.0
+</td>
+
+<td>
+94.7
+</td>
+
+<td>
+100.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_2
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+50.0
+</td>
+
+<td>
+94.5
+</td>
+
+<td>
+100.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+50.0
+</td>
+
+<td>
+94.7
+</td>
+
+<td>
+100.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_3
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+50.0
+</td>
+
+<td>
+94.5
+</td>
+
+<td>
+1000.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+50.0
+</td>
+
+<td>
+94.7
+</td>
+
+<td>
+100.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+USB3_2 number of port
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3301 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+USB3_2 Iperf Test
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="fail">FAIL</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 31740 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="section-title">
+Measured Data
+</div>
+
+<div class="subsequence-title">
+PORT_0
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+300.0
+</td>
+
+<td>
+359.0
+</td>
+
+<td>
+480.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+200.0
+</td>
+
+<td>
+280.0
+</td>
+
+<td>
+480.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_1
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+300.0
+</td>
+
+<td>
+221.0
+</td>
+
+<td>
+480.0
+</td>
+
+<td class="fail">
+FAIL
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+200.0
+</td>
+
+<td>
+105.0
+</td>
+
+<td>
+480.0
+</td>
+
+<td class="fail">
+FAIL
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_2
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+300.0
+</td>
+
+<td>
+359.0
+</td>
+
+<td>
+480.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+200.0
+</td>
+
+<td>
+279.0
+</td>
+
+<td>
+480.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="subsequence-title">
+PORT_3
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PING
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td>
+PINGOK
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+TX
+</td>
+
+<td>
+300.0
+</td>
+
+<td>
+359.0
+</td>
+
+<td>
+480.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+RX
+</td>
+
+<td>
+200.0
+</td>
+
+<td>
+277.0
+</td>
+
+<td>
+480.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+USB2 to USB3
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3038 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+SATA Get port 1
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3121 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+Message
+</td>
+
+<td>
+SATA Get port 1 OK
+</td>
+</tr>
+
+</table>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+SATA Set Port 2
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3039 ms
+
+</div>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+EMMC-8bit
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3137 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+EMMC Information
+</div>
+
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+
+<tr>
+
+<td>
+Result
+</td>
+
+<td>
+NONE
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Bus Width
+</td>
+
+<td>
+3
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Clock
+</td>
+
+<td>
+200000000
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Timing
+</td>
+
+<td>
+10
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+EMMC-4bit
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 8044 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+EMMC Information
+</div>
+
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+
+<tr>
+
+<td>
+Result
+</td>
+
+<td>
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Bus Width
+</td>
+
+<td>
+2
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Clock
+</td>
+
+<td>
+200000000
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Timing
+</td>
+
+<td>
+9
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+SDIO
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 8680 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+SDIO Information
+</div>
+
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+</tr>
+
+<tr>
+
+<td>
+Result
+</td>
+
+<td>
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Bus Width
+</td>
+
+<td>
+2
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Clock
+</td>
+
+<td>
+50000000
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Timing
+</td>
+
+<td>
+2
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+UART
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 46278 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+1
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart cb tx 0 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 1
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> 
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+2
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart ab rx 0 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 2
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> PASS
+&nbsp;&nbsp;|&nbsp;&nbsp;
+UART verificado correctamente
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+3
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart ab tx 0 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 3
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> 
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+4
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart cb rx 0 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 4
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> PASS
+&nbsp;&nbsp;|&nbsp;&nbsp;
+UART verificado correctamente
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+5
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart cb tx 1 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 5
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> 
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+6
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart ab rx 1 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 6
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> PASS
+&nbsp;&nbsp;|&nbsp;&nbsp;
+UART verificado correctamente
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+7
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart ab tx 1 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 7
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> 
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+8
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart cb rx 1 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 8
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> PASS
+&nbsp;&nbsp;|&nbsp;&nbsp;
+UART verificado correctamente
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+9
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart cb tx 3 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 9
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> 
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+10
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart ab rx 3 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 10
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> PASS
+&nbsp;&nbsp;|&nbsp;&nbsp;
+UART verificado correctamente
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+11
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart ab tx 3 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 11
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> 
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+12
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh uart cb rx 3 8
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 12
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> PASS
+&nbsp;&nbsp;|&nbsp;&nbsp;
+UART verificado correctamente
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+I2C
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 29677 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<div class="subsequence-title">
+I2C Temperature Sensors
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Sensor</th>
+<th>Low Limit</th>
+<th>Actual °C</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Sensor 0
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+26.31
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Sensor 1
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+26.37
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Sensor 2
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+26.5
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Sensor 3
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+26.62
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Sensor 4
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+26.68
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Sensor 5
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+26.5
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Sensor 6
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+26.43
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+Sensor 7
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+26.75
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+SPI
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 14743 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<div class="subsequence-title">
+SPI Device Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Device</th>
+<th>Expected Device ID</th>
+<th>Actual Device ID</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+SPI 1.0
+</td>
+
+<td>
+88 DE 94 00 12 F7 FF 28 00 F4 AE D2 D4 0A
+</td>
+
+<td>
+70 59 0A 00 04 F2 FF 3A 00 AC D5 F8 B8 B7
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+SPI 1.1
+</td>
+
+<td>
+E0 B5 92 00 17 13 00 0E 00 FB B1 0E FB B9
+</td>
+
+<td>
+70 59 0A 00 13 EE FF 1D 00 66 BC F9 DD E0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+SPI 3.0
+</td>
+
+<td>
+E0 B5 92 00 16 10 00 03 00 33 DB 0E 1A 39
+</td>
+
+<td>
+70 59 0A 00 04 20 00 12 00 D4 CE F8 CB 4F
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+SPI 3.1
+</td>
+
+<td>
+E0 B5 92 00 17 0D 00 41 00 B7 BD 0E 73 FE
+</td>
+
+<td>
+70 59 0A 00 04 FF FF 41 00 AB D5 F8 58 3E
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+I2S
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 68644 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<div class="subsequence-title">
+I2S Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Item</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+I2S 0
+</td>
+
+<td>
+999.0
+</td>
+
+<td>
+999
+</td>
+
+<td>
+1001.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+I2S 1
+</td>
+
+<td>
+999.0
+</td>
+
+<td>
+999
+</td>
+
+<td>
+1001.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+I2S 2
+</td>
+
+<td>
+999.0
+</td>
+
+<td>
+999
+</td>
+
+<td>
+1001.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+I2S 3
+</td>
+
+<td>
+999.0
+</td>
+
+<td>
+999
+</td>
+
+<td>
+1001.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+I2S 4
+</td>
+
+<td>
+
+</td>
+
+<td>
+999
+</td>
+
+<td>
+
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+I2S 5
+</td>
+
+<td>
+999.0
+</td>
+
+<td>
+999
+</td>
+
+<td>
+1001.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+SMBus
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3293 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+SMBus Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Temperature
+</td>
+
+<td>
+-45.0
+</td>
+
+<td>
+25.81
+</td>
+
+<td>
+110.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+LPC
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3072 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+DDR Get Result
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3058 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+DDR Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+DDR VALUE
+</td>
+
+<td>
+-9999.0
+</td>
+
+<td>
+4582.0
+</td>
+
+<td>
+9999.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+AB Mrcthreshold
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3072 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+Measurement Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Measurement</th>
+<th>Low Limit</th>
+<th>Actual</th>
+<th>High Limit</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+Ab Mrcthreshold
+</td>
+
+<td>
+0.0
+</td>
+
+<td>
+0.2
+</td>
+
+<td>
+2.0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+HDMI
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 5576 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+Message
+</td>
+
+<td>
+Comando aceptado: COMMAND_ACCEPT
+</td>
+</tr>
+
+</table>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+message
+</td>
+
+<td>
+COMMAND_ACCEPT
+</td>
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+PWM
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 23408 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<div class="subsequence-title">
+PWM Configuration
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Command</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+pwm start
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+pwm 0
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+pwm 1
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+pwm 2
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+pwm 3
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+pwm stop
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+SATA Get Port 2
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3117 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+Message
+</td>
+
+<td>
+SATA Get Port 2 OK
+</td>
+</tr>
+
+</table>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+GPIO
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 272341 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<div class="subsequence-title">
+GPIO Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Pattern</th>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+GROUP1_CB_ORDER HIGH_0-15
+</td>
+
+<td>
+1111111111111101
+</td>
+
+<td>
+1111111111111101
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP1_CB_ORDER LOW_0-15
+</td>
+
+<td>
+0000000000000000
+</td>
+
+<td>
+0000000000000000
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP1_AB_ORDER HIGH_0-15
+</td>
+
+<td>
+1111111111111101
+</td>
+
+<td>
+1111111111111101
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP1_CABORDER LOW_0-15
+</td>
+
+<td>
+0000000000000000
+</td>
+
+<td>
+0000000000000000
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP2_CB_ORDER HIGH_16-31
+</td>
+
+<td>
+0111111111111111
+</td>
+
+<td>
+0111111111111111
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP2_CB_ORDER LOW_16-31
+</td>
+
+<td>
+0000000000000000
+</td>
+
+<td>
+0000000000000000
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP2_AB_ORDER HIGH_16-31
+</td>
+
+<td>
+0111111111111111
+</td>
+
+<td>
+0111111111111111
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP2_AB_ORDER LOW_16-31
+</td>
+
+<td>
+0000000000000000
+</td>
+
+<td>
+0000000000000000
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP3_CB_ORDER HIGH_32-41
+</td>
+
+<td>
+1111111111
+</td>
+
+<td>
+1111111111
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP3_CB_ORDER LOW_32-41
+</td>
+
+<td>
+0000010000
+</td>
+
+<td>
+0000010000
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP3_AB_ORDER HIGH_32-41
+</td>
+
+<td>
+1111111111
+</td>
+
+<td>
+1111111111
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+GROUP3_AB_ORDER LOW_32-41
+</td>
+
+<td>
+0000010000
+</td>
+
+<td>
+0000010000
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+CSI
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="fail">FAIL</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 18497 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+1
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh csi 1
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 1
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> FAIL
+&nbsp;&nbsp;|&nbsp;&nbsp;
+CSI esperado PASS, obtenido FAIL
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+2
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh csi 2
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 2
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> FAIL
+&nbsp;&nbsp;|&nbsp;&nbsp;
+CSI esperado PASS, obtenido FAIL
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+AB CPU Temp
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 3087 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+Message
+</td>
+
+<td>
+CPU Temp OK: 48.0°C
+</td>
+</tr>
+
+</table>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+value
+</td>
+
+<td>
+48
+</td>
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+AB Erase DID
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> AB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 21445 ms
+
+</div>
+
+<div class="section-title">
+Verification
+</div>
+
+<table class="detail-table">
+
+</table>
+
+<div class="subsequence-title">
+PCB Verification
+</div>
+
+<div class="subsequence-content">
+
+<table class="detail-table">
+
+<tr>
+<th>Expected</th>
+<th>Actual</th>
+<th>Result</th>
+</tr>
+
+<tr>
+
+<td>
+PASSED
+</td>
+
+<td>
+PASSED
+</td>
+
+<td class="pass">
+PASS
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+</div>
+
+
+<div class="test-block">
+
+<div class="test-title">
+AB Power Off
+</div>
+
+<div class="test-summary">
+
+<b>Status:</b> <span class="pass">PASS</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Board:</b> CB
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+<b>Duration:</b> 8127 ms
+
+</div>
+
+<div class="section-title">
+TestResults / Data
+</div>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+1
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh powerswitch 0
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 1
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> 
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+
+</div>
+
+<br>
+
+<table class="detail-table">
+
+<tr>
+<td class="detail-label">
+ADC Step
+</td>
+
+<td>
+2
+</td>
+</tr>
+
+<tr>
+<td class="detail-label">
+Command
+</td>
+
+<td>
+websocket_test.sh powerswitch 0
+</td>
+</tr>
+
+</table>
+
+<br>
+
+<div class="adc-summary">
+
+<b>Step:</b> 2
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<b>Status:</b> 
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+
+</div>
+
+<br>
+
+</div>
+
+</body>
+</html>

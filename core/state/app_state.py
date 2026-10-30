@@ -21,6 +21,8 @@ class AppState:
 
         self.last_sync = None
 
+        self.source = "SAPME"
+
     def reset(self):
 
         self.current_sfc = None
@@ -36,6 +38,9 @@ class AppState:
         self.tests_loaded = 0
 
         self.last_sync = None
+
+        self.source = "SAPME"
+
 
 
 app_state = AppState()

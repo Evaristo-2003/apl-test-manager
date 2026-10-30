@@ -46,7 +46,7 @@ class ParserService:
         raw_value = result_match.group(1) if result_match else text[:200]
         
         # ============================================================
-        # PARSEAR SEGÚN TIPO DE PRUEBA (MIGRADO DE TU APP.PY ORIGINAL)
+        # PARSEAR SEGÚN TIPO DE PRUEBA 
         # ============================================================
         
         # ----- CBSW Version -----
