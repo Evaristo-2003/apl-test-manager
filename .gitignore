@@ -23,6 +23,9 @@ wheels/
 .installed.cfg
 *.egg
 
+# PyInstaller
+*.spec.bak
+
 # IDE
 .vscode/
 .idea/
@@ -32,7 +35,17 @@ wheels/
 # Logs y resultados
 logs/
 *.log
+analysis_logs/
+
 results_*.json
+results_*.html
+
+# Archivos temporales
+freeze.txt
+usb32.txt
+
+# SAPME
+output/
 
 # Sistema
 .DS_Store
