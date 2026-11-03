@@ -7,8 +7,10 @@ import time
 import threading
 from datetime import datetime
 
-from PySide6.QtCore import QObject, Signal, Qt
+from PySide6.QtCore import QObject, QTimer, Signal, Qt
+from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import (
+    QMessageBox,
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -17,10 +19,13 @@ from PySide6.QtWidgets import (
     QComboBox,
     QTextBrowser,
     QGroupBox,
+    QLineEdit,
 )
 
 from core.adapters.serial_adapter import SerialAdapter
+from core.services.diagnostic_engine import DiagnosticEngine
 from core.ui.styles import AppStyles
+from core.ui.widgets.led_selector_dialog import LedSelectorDialog
 from core.ui.workers.fixture_worker import FixtureWorker
 
 
@@ -33,19 +38,21 @@ class LogSignals(QObject):
 class AnalysisView(QWidget):
     """
     Vista de Analysis para diagnóstico AB/CB.
-    
+
     Permite:
         - Conectar CB y AB por COM
         - Capturar logs continuos de ambos puertos
+        - Enviar comandos manuales a CB y AB
         - Guardar logs combinados
         - Ejecutar "AB CONNECTION" (power on AB)
     """
 
-    def __init__(self,fixture_controller):
+    def __init__(self, fixture_controller):
         super().__init__()
 
         # Inicializar controlador de fixture
-        self.fixture_controller = (fixture_controller)
+        self.fixture_controller = fixture_controller
+
         # Adaptadores
         self.cb_adapter = SerialAdapter()
         self.ab_adapter = SerialAdapter()
@@ -65,9 +72,27 @@ class AnalysisView(QWidget):
         self._build_ui()
 
         # Conectar señales a consolas
-        self.signals.cb_text.connect(self.cb_console.insertPlainText)
-        self.signals.ab_text.connect(self.ab_console.insertPlainText)
+        self.signals.cb_text.connect(self._append_cb_text)
+        self.signals.ab_text.connect(self._append_ab_text)
+
         self.refresh_ports()
+
+    # ============================================================
+    # CALLBACKS DE SEÑALES (UI Thread)
+    # ============================================================
+
+    def _append_cb_text(self, text: str):
+        """Inserta texto en la consola CB y hace auto-scroll."""
+        self.cb_console.moveCursor(QTextCursor.End)
+        self.cb_console.insertPlainText(text)
+        self.cb_console.moveCursor(QTextCursor.End)
+
+    def _append_ab_text(self, text: str):
+        """Inserta texto en la consola AB y hace auto-scroll."""
+        self.ab_console.moveCursor(QTextCursor.End)
+        self.ab_console.insertPlainText(text)
+        self.ab_console.moveCursor(QTextCursor.End)
+
     # ============================================================
     # CONSTRUCCIÓN DE UI
     # ============================================================
@@ -79,91 +104,35 @@ class AnalysisView(QWidget):
         # ANALYSIS ACTIONS
         # --------------------------
         actions_layout = QHBoxLayout()
-        self.btn_refresh_ports = QPushButton(
-            "REFRESH PORTS"
-        )
 
-        self.btn_refresh_ports.setStyleSheet(
-            AppStyles.RUN_ALL_BUTTON
-        )
+        self.btn_refresh_ports = QPushButton("REFRESH PORTS")
+        self.btn_refresh_ports.setStyleSheet(AppStyles.RUN_ALL_BUTTON)
+        self.btn_refresh_ports.setFixedHeight(28)
 
-        self.btn_refresh_ports.setFixedHeight(
-            28
-        )
+        self.btn_ab_connection = QPushButton("AB CONNECTION")
+        self.btn_ab_connection.setStyleSheet(AppStyles.RUN_ALL_BUTTON)
+        self.btn_ab_connection.setFixedHeight(28)
 
-        self.btn_ab_connection = QPushButton(
-            "AB CONNECTION"
-        )
+        self.btn_clear_terminal = QPushButton("CLEAR TERMINAL")
+        self.btn_clear_terminal.setStyleSheet(AppStyles.RUN_ALL_BUTTON)
+        self.btn_clear_terminal.setFixedHeight(28)
 
-        self.btn_ab_connection.setStyleSheet(
-            AppStyles.RUN_ALL_BUTTON
-        )
+        self.btn_save_log = QPushButton("SAVE LOG")
+        self.btn_save_log.setStyleSheet(AppStyles.RUN_ALL_BUTTON)
+        self.btn_save_log.setFixedHeight(28)
 
-        self.btn_ab_connection.setFixedHeight(
-            28
-        )
-
-        self.btn_clear_terminal = QPushButton(
-            "CLEAR TERMINAL"
-        )
-
-        self.btn_clear_terminal.setStyleSheet(
-            AppStyles.RUN_ALL_BUTTON
-        )
-
-        self.btn_clear_terminal.setFixedHeight(
-            28
-        )
-
-        self.btn_save_log = QPushButton(
-            "SAVE LOG"
-        )
-
-        self.btn_save_log.setStyleSheet(
-            AppStyles.RUN_ALL_BUTTON
-        )
-
-        self.btn_save_log.setFixedHeight(
-            28
-        )
-
-        self.btn_disconnect = QPushButton(
-            "DISCONNECT"
-        )
-
-        self.btn_disconnect.setStyleSheet(
-            AppStyles.RUN_ALL_BUTTON
-        )
-
-        self.btn_disconnect.setFixedHeight(
-            28
-        )
+        self.btn_disconnect = QPushButton("DISCONNECT")
+        self.btn_disconnect.setStyleSheet(AppStyles.RUN_ALL_BUTTON)
+        self.btn_disconnect.setFixedHeight(28)
 
         actions_layout.addStretch()
+        actions_layout.addWidget(self.btn_ab_connection)
+        actions_layout.addWidget(self.btn_refresh_ports)
+        actions_layout.addWidget(self.btn_clear_terminal)
+        actions_layout.addWidget(self.btn_save_log)
+        actions_layout.addWidget(self.btn_disconnect)
 
-        actions_layout.addWidget(
-            self.btn_ab_connection
-        )
-
-        actions_layout.addWidget(
-            self.btn_refresh_ports
-        )
-
-        actions_layout.addWidget(
-            self.btn_clear_terminal
-        )
-
-        actions_layout.addWidget(
-            self.btn_save_log
-        )
-
-        actions_layout.addWidget(
-            self.btn_disconnect
-        )
-
-        layout.addLayout(
-            actions_layout
-        )
+        layout.addLayout(actions_layout)
 
         # --------------------------
         # CB BOARD
@@ -199,13 +168,45 @@ class AnalysisView(QWidget):
         self.btn_cb_power_off = QPushButton("POWER OFF")
         self.btn_cb_power_off.setStyleSheet(AppStyles.ANALYSIS_BUTTON)
         cb_top.addWidget(self.btn_cb_power_off)
-        
+
         cb_top.addStretch()
         cb_layout.addLayout(cb_top)
 
         self.cb_console = QTextBrowser()
         self.cb_console.setPlaceholderText("CB console output...")
         cb_layout.addWidget(self.cb_console)
+
+        # ============================================================
+        # NUEVO: Barra de comandos para CB
+        # ============================================================
+        cb_cmd_layout = QHBoxLayout()
+        cb_cmd_layout.addWidget(QLabel("Command:"))
+
+        self.cb_command_input = QLineEdit()
+        self.cb_command_input.setPlaceholderText("...")
+        self.cb_command_input.setStyleSheet("""
+            QLineEdit {
+                background: white;
+                border: 1px solid #D0D0D0;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-family: Consolas;
+                font-size: 10pt;
+            }
+            QLineEdit:focus {
+                border: 1px solid #3182CE;
+            }
+        """)
+        self.cb_command_input.returnPressed.connect(self.send_cb_command)
+        cb_cmd_layout.addWidget(self.cb_command_input)
+
+        self.btn_cb_send = QPushButton("SEND")
+        self.btn_cb_send.setStyleSheet(AppStyles.ANALYSIS_BUTTON)
+        self.btn_cb_send.setFixedWidth(80)
+        self.btn_cb_send.clicked.connect(self.send_cb_command)
+        cb_cmd_layout.addWidget(self.btn_cb_send)
+
+        cb_layout.addLayout(cb_cmd_layout)
 
         layout.addWidget(self.cb_group)
 
@@ -246,6 +247,38 @@ class AnalysisView(QWidget):
         self.ab_console = QTextBrowser()
         self.ab_console.setPlaceholderText("AB console output...")
         ab_layout.addWidget(self.ab_console)
+
+        # ============================================================
+        # NUEVO: Barra de comandos para AB
+        # ============================================================
+        ab_cmd_layout = QHBoxLayout()
+        ab_cmd_layout.addWidget(QLabel("Command:"))
+
+        self.ab_command_input = QLineEdit()
+        self.ab_command_input.setPlaceholderText("...")
+        self.ab_command_input.setStyleSheet("""
+            QLineEdit {
+                background: white;
+                border: 1px solid #D0D0D0;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-family: Consolas;
+                font-size: 10pt;
+            }
+            QLineEdit:focus {
+                border: 1px solid #3182CE;
+            }
+        """)
+        self.ab_command_input.returnPressed.connect(self.send_ab_command)
+        ab_cmd_layout.addWidget(self.ab_command_input)
+
+        self.btn_ab_send = QPushButton("SEND")
+        self.btn_ab_send.setStyleSheet(AppStyles.ANALYSIS_BUTTON)
+        self.btn_ab_send.setFixedWidth(80)
+        self.btn_ab_send.clicked.connect(self.send_ab_command)
+        ab_cmd_layout.addWidget(self.btn_ab_send)
+
+        ab_layout.addLayout(ab_cmd_layout)
 
         layout.addWidget(self.ab_group)
 
@@ -398,6 +431,48 @@ class AnalysisView(QWidget):
         threading.Thread(target=worker, daemon=True).start()
 
     # ============================================================
+    # NUEVO: ENVIAR COMANDOS MANUALES
+    # ============================================================
+
+    def send_cb_command(self):
+        """Envía un comando manual a la CB."""
+        command = self.cb_command_input.text().strip()
+        if not command:
+            return
+
+        if not self.cb_adapter.is_connected():
+            self.cb_console.append("\n[ERROR] CB no está conectado.\n")
+            return
+
+        # Mostrar el comando en la consola
+        self.cb_console.append(f"\n[TX] {command}")
+
+        # Enviar el comando al adaptador
+        self.cb_adapter.send_command(command)
+
+        # Limpiar el input
+        self.cb_command_input.clear()
+
+    def send_ab_command(self):
+        """Envía un comando manual a la AB."""
+        command = self.ab_command_input.text().strip()
+        if not command:
+            return
+
+        if not self.ab_adapter.is_connected():
+            self.ab_console.append("\n[ERROR] AB no está conectado.\n")
+            return
+
+        # Mostrar el comando en la consola
+        self.ab_console.append(f"\n[TX] {command}")
+
+        # Enviar el comando al adaptador
+        self.ab_adapter.send_command(command)
+
+        # Limpiar el input
+        self.ab_command_input.clear()
+
+    # ============================================================
     # KILL WSSC
     # ============================================================
 
@@ -418,11 +493,12 @@ class AnalysisView(QWidget):
         self.ab_console.append("\n[KILL WSSC sent to AB]\n")
 
     # ============================================================
-    # AB CONNECTION (Power On)
+    # AB CONNECTION (Power On & Analyze)
     # ============================================================
 
     def start_ab_connection_analysis(self):
-        """Ejecuta el flujo de AB CONNECTION."""
+        """Ejecuta el flujo de AB CONNECTION y análisis en tiempo real."""
+
         if not self.cb_adapter.is_connected():
             self.cb_console.append("\n[ERROR] CB NOT CONNECTED\n")
             return
@@ -431,20 +507,124 @@ class AnalysisView(QWidget):
             self.ab_console.append("\n[ERROR] AB NOT CONNECTED\n")
             return
 
-        # Limpiar buffers
-#        self.cb_log_buffer.clear()
-#        self.ab_log_buffer.clear()
+        self.cb_console.append("\n========== CB CONNECTION TEST ==========")
+        self.ab_console.append("\n========== AB CONNECTION TEST ==========")
 
-        # Limpiar consolas
-#        self.cb_console.clear()
-#        self.ab_console.clear()
+        self.cb_log_buffer.clear()
+        self.ab_log_buffer.clear()
+        self.cb_console.clear()
+        self.ab_console.clear()
 
-        # Encabezados
-        self.cb_console.append("========== AB CONNECTION TEST ==========")
+        self.cb_console.append("========== CB CONNECTION TEST ==========")
         self.ab_console.append("========== AB CONNECTION TEST ==========")
 
-        # Enviar power on
+        self.cb_console.append("[CB] Enviando comando de encendido a la AB...")
         self.cb_adapter.send_command("pwr_on_intl.sh 1")
+
+        self.cb_console.append("[DIAGNOSTIC] Monitoreando el arranque de la AB...")
+
+        # Variables para el monitoreo en tiempo real
+        self._diag_start_time = time.time()
+
+        # Si ya había un timer corriendo, lo detenemos para que no se duplique
+        if hasattr(self, '_diag_timer') and self._diag_timer.isActive():
+            self._diag_timer.stop()
+
+        self._diag_timer = QTimer(self)
+        self._diag_timer.timeout.connect(self._check_ab_log_realtime)
+        self._diag_timer.start(2000)  # Revisar cada 2 segundos
+
+    # ============================================================
+    # CHECK AB LOG REALTIME
+    # ============================================================
+
+    def _check_ab_log_realtime(self):
+        """Revisa el log. Si no hay falla clara, pregunta por los LEDs."""
+
+        ab_log = self.ab_console.toPlainText()
+        tiempo_transcurrido = time.time() - self._diag_start_time
+
+        palabras_criticas = ["MRC", "ACPI MEMORY", "Kernel panic", "root@harman-si-intel-plk", "EXCEPTION"]
+        ha_terminado_o_fallado = any(palabra in ab_log for palabra in palabras_criticas)
+
+        # 2. Si terminó o pasaron más de 15 segundos (timeout)
+        if ha_terminado_o_fallado or tiempo_transcurrido > 15:
+
+            self._diag_timer.stop()
+
+            # =========================================================
+            #  SI NO HAY LOG O ES MUY CORTO, SALTAMOS AL FILTRO DE LEDS
+            # =========================================================
+            if not ab_log.strip() or len(ab_log) < 50:
+                self.cb_console.append("\n[DIAGNOSTIC] ⚠️ No se recibió log de la AB en 15s.")
+                self.cb_console.append("[DIAGNOSTIC] Solicitando estado de LEDs para diagnóstico...")
+
+                # Lanzamos el diálogo de LEDs
+                dialog = LedSelectorDialog(self)
+                if dialog.exec():
+                    led_d62, led_d65 = dialog.get_selection()
+                    result = DiagnosticEngine.analyze_with_leds(ab_log, led_d62, led_d65)
+                    self._show_diagnostic_result(result)
+                else:
+                    self.cb_console.append("\n[DIAGNOSTIC] Diagnóstico cancelado por el operador.")
+                return
+
+            # =========================================================
+            #  FILTRO 1: Analizar SOLO el log (Si sí hubo log)
+            # =========================================================
+            result = DiagnosticEngine.analyze_ab_log_only(ab_log)
+
+            # Si el log fue concluyente, no preguntamos por LEDs
+            if result["status"] != "UNKNOWN":
+                self._show_diagnostic_result(result)
+                return
+
+            # =========================================================
+            #  FILTRO 2: Si el log no dijo nada, preguntamos por LEDs
+            # =========================================================
+            self.cb_console.append("[DIAGNOSTIC] Log no concluyente. Solicitando estado de LEDs...")
+            dialog = LedSelectorDialog(self)
+            if dialog.exec():
+                led_d62, led_d65 = dialog.get_selection()
+                result = DiagnosticEngine.analyze_with_leds(ab_log, led_d62, led_d65)
+                self._show_diagnostic_result(result)
+            else:
+                self.cb_console.append("\n[DIAGNOSTIC] Diagnóstico cancelado por el operador.")
+
+    def _show_diagnostic_result(self, result):
+        """Muestra el resultado final en la consola y en una ventana emergente simplificada."""
+
+        # 1. Escribir en la consola de la CB
+        self.cb_console.append("\n" + "="*50)
+        self.cb_console.append(f"🏥 DIAGNÓSTICO AUTOMÁTICO")
+        self.cb_console.append(f"Modo de Falla: {result['mode']}")
+        self.cb_console.append(f"Error: {result['diagnosis']}")
+        self.cb_console.append("="*50 + "\n")
+
+        # 2. Mostrar la ventana emergente final
+        msg_final = QMessageBox()
+
+        if result['status'] == "FAIL":
+            msg_final.setIcon(QMessageBox.Critical)
+            msg_final.setWindowTitle("Falla Detectada")
+        elif result['status'] == "PASS":
+            msg_final.setIcon(QMessageBox.Information)
+            msg_final.setWindowTitle("Prueba Exitosa")
+        else:
+            msg_final.setIcon(QMessageBox.Warning)
+            msg_final.setWindowTitle("Resultado Desconocido")
+
+        # Mostramos solo el Modo y el Error (sin sugerencias)
+        msg_final.setText(f"<b>Modo de Falla:</b> {result['mode']}")
+
+        if result['status'] == "PASS":
+            msg_final.setInformativeText("Arranque correcto.")
+        elif result['mode'] == "UNKNOWN":
+            msg_final.setInformativeText("No se pudo identificar el error. Requiere análisis manual.")
+        else:
+            msg_final.setInformativeText(f"<b>Error:</b>\n{result['diagnosis']}")
+
+        msg_final.exec()
 
     # ============================================================
     # SAVE LOG
@@ -475,14 +655,11 @@ class AnalysisView(QWidget):
         )
 
         if sfc:
-
             filename = (
                 f"analysis_logs/"
                 f"{sfc}_{project}.log"
             )
-
         else:
-
             filename = (
                 f"analysis_logs/"
                 f"NO_SFC_{project}.log"
@@ -505,6 +682,7 @@ class AnalysisView(QWidget):
 
         with open(filename, "w", encoding="utf-8") as f:
             f.write(content)
+
         #
         # Limpiar buffers
         #
@@ -518,192 +696,156 @@ class AnalysisView(QWidget):
         self.ab_console.clear()
         self.cb_console.append(f"\n[SAVE LOG] Saved to {filename}\n")
         self.ab_console.append(f"\n[SAVE LOG] Saved to {filename}\n")
-  
+
     # ============================================================
-    # DISCONNECT ALL
+    # DISCONNECT ALL (Solo cierra puertos y actualiza UI)
     # ============================================================
     def disconnect_all(self):
 
-        #
-        # Detener capturas
-        #
+        # 1. Detener capturas
         self.cb_capture_running = False
         self.ab_capture_running = False
 
-        #
-        # Erase DID
-        #
+        # 2. Desconectar adaptadores
         if self.ab_adapter.is_connected():
-
-            self.ab_console.append(
-                "\n[ERASING DID]\n"
-            )
-
-            response = (
-                self.ab_adapter.execute_command_until(
-                    "websocket_test.sh erasedid",
-                    "ERASE DID/PDR SUCCESS",
-                    30
-                )
-            )
-
-            self.ab_console.append(
-                response
-            )
-
-            if "ERASE DID/PDR SUCCESS" in response:
-
-                self.ab_console.append(
-                    "\n[DID ERASED SUCCESSFULLY]\n"
-                )
-
-            else:
-
-                self.ab_console.append(
-                    "\n[DID ERASE FAILED]\n"
-                )
-
-        #
-        # Power OFF AB
-        #
-        if self.ab_adapter.is_connected():
-
-            self.ab_console.append(
-                "\n[POWER OFF AB]\n"
-            )
-
-            response = (
-                self.ab_adapter.execute_command(
-                    "websocket_test.sh powerswitch 0"
-                )
-            )
-
-            if response:
-
-                self.ab_console.append(
-                    response
-                )
-
-        #
-        # Power OFF CB
-        #
-        if self.cb_adapter.is_connected():
-
-            self.cb_console.append(
-                "\n[POWER OFF CB]\n"
-            )
-
-            response = (
-                self.cb_adapter.execute_command(
-                    "websocket_test.sh powerswitch 0"
-                )
-            )
-
-            if response:
-
-                self.cb_console.append(
-                    response
-                )
-
-        #
-        # Disconnect adapters
-        #
-        if self.ab_adapter.is_connected():
-
             self.ab_adapter.disconnect()
 
         if self.cb_adapter.is_connected():
-
             self.cb_adapter.disconnect()
 
-        #
-        # Update UI
-        #
-        self.lbl_cb_status.setText(
-            "STATUS: DISCONNECTED"
-        )
-
+        # 3. Actualizar UI (Estado de los labels)
+        self.lbl_cb_status.setText("STATUS: DISCONNECTED")
         self.lbl_cb_status.setStyleSheet("""
             color: #404040;
             font-weight: 600;
         """)
 
-        self.lbl_ab_status.setText(
-            "STATUS: DISCONNECTED"
-        )
-
+        self.lbl_ab_status.setText("STATUS: DISCONNECTED")
         self.lbl_ab_status.setStyleSheet("""
             color: #404040;
             font-weight: 600;
         """)
 
-        self.cb_console.append(
-            "\n[CB DISCONNECTED]\n"
-        )
-
-        self.ab_console.append(
-            "\n[AB DISCONNECTED]\n"
-        )
+        # 4. Mensajes finales en consola
+        self.cb_console.append("\n[CB DISCONNECTED]\n")
+        self.ab_console.append("\n[AB DISCONNECTED]\n")
 
     # ============================================================
-    # POWER OFF CB
+    # POWER OFF CB (Apagar placa y desconectar puertos)
     # ============================================================
     def power_off_cb(self):
         if not self.cb_adapter.is_connected():
             self.cb_console.append("\n[CB NOT CONNECTED]\n")
             return
- 
+
         if not self.ab_adapter.is_connected():
             self.cb_console.append("\n[AB NOT CONNECTED, CANNOT ERASE DID]\n")
             return
- 
+
         self.cb_console.append("\n[ERASE DID EN PROGRESO...]\n")
         self._power_off_response = ""
- 
+
         def process_power_off():
             # 1. Mandar erase did a la AB y esperar el prompt de Linux
             erase_response = self.ab_adapter.execute_command_until(
                 "websocket_test.sh erasedid",
-                "root@harman-si-intel-plk:~#", #Esperamos el prompt en lugar del SUCCESS
-                60 
+                "root@harman-si-intel-plk:~#",  # Esperamos el prompt
+                60
             )
             self._power_off_response = erase_response
- 
+
             # 2. Mandar el power off a la CB inmediatamente después
             self.cb_adapter.execute_command(
                 "websocket_test.sh powerswitch 0"
             )
- 
+
         worker = FixtureWorker(process_power_off)
- 
+
         def on_finished(success):
             # Si la AB respondió, lo mostramos
             if self._power_off_response:
                 self.ab_console.append(self._power_off_response)
- 
+
             self.cb_console.append("\n[ERASE DID FINALIZADO]\n")
             self.cb_console.append("\n[POWER OFF COMMAND SENT TO CB]\n")
- 
+
+            # Desconectar adaptadores y actualizar UI
+            # 1. Detener capturas
+            self.cb_capture_running = False
+            self.ab_capture_running = False
+
+            # 2. Desconectar adaptadores
+            if self.ab_adapter.is_connected():
+                self.ab_adapter.disconnect()
+
+            if self.cb_adapter.is_connected():
+                self.cb_adapter.disconnect()
+
+            # 3. Actualizar UI (Estado de los labels)
+            self.lbl_cb_status.setText("STATUS: DISCONNECTED")
+            self.lbl_cb_status.setStyleSheet("""
+                color: #404040;
+                font-weight: 600;
+            """)
+
+            self.lbl_ab_status.setText("STATUS: DISCONNECTED")
+            self.lbl_ab_status.setStyleSheet("""
+                color: #404040;
+                font-weight: 600;
+            """)
+
+            # 4. Mensajes finales en consola
+            self.cb_console.append("\n[CB DISCONNECTED]\n")
+            self.ab_console.append("\n[AB DISCONNECTED]\n")
+
         def on_error(error_msg):
             self.cb_console.append(f"\n[ERROR EN EL HILO]: {error_msg}\n")
- 
+
         worker.signals.finished.connect(on_finished)
         worker.signals.error.connect(on_error)
- 
+
         from PySide6.QtCore import QThreadPool
         QThreadPool.globalInstance().start(worker)
- 
- 
- 
+
+    # ============================================================
+    # DIAGNOSTIC ENGINE
+    # ============================================================
+    def run_diagnostics(self):
+        """Analiza el log actual de la AB y muestra el diagnóstico."""
+
+        # 1. Obtener el texto actual de la consola de la AB
+        ab_log = self.ab_console.toPlainText()
+
+        if not ab_log.strip():
+            self.cb_console.append("\n[DIAGNOSTIC] ⚠️ No hay log en la AB para analizar.\n")
+            return
+
+        # 2. Ejecutar el motor de reglas
+        result = DiagnosticEngine.analyze_ab_log(ab_log)
+
+        # 3. Mostrar el resultado en la consola de la CB (o en un QMessageBox)
+        self.cb_console.append("\n" + "="*50)
+        self.cb_console.append(f"🏥 DIAGNÓSTICO AUTOMÁTICO (Modo {result['mode']})")
+        self.cb_console.append(f"Estado: {result['status']}")
+        self.cb_console.append(f"🔍 Problema: {result['diagnosis']}")
+        self.cb_console.append(f"🛠️ Acción: {result['action']}")
+        self.cb_console.append("="*50 + "\n")
+
+        # Opcional: Mostrar una ventana emergente si es FAIL
+        if result['status'] == "FAIL":
+            from PySide6.QtWidgets import QMessageBox
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setWindowTitle(f"Falla Detectada - Modo {result['mode']}")
+            msg.setText(f"Problema: {result['diagnosis']}")
+            msg.setInformativeText(f"Acción Sugerida:\n{result['action']}")
+            msg.exec()
+
     # ============================================================
     # CLEAR TERMINAL
     # ============================================================
     def clear_terminal(self):
-
         self.cb_console.clear()
-
         self.ab_console.clear()
-
         self.cb_log_buffer.clear()
-
         self.ab_log_buffer.clear()

@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
         results_tab = self._create_results_tab()
         self.tabs.addTab(
             results_tab,
-            "Resultados"
+            "Results"
         )
         # Tab 4
         analysis_tab = self._create_analysis_tab()

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Servicio de ejecución de pruebas"""
-
+ 
 import time
 from collections.abc import Callable
-
+ 
 from core.models.test_result import TestMetric, TestResult
 from core.repositories.button_repository import ButtonRepository
 from core.services.parser_service import ParserService
 from core.services.serial_service import SerialService
 from core.services.verification_service import VerificationService
-
-
+ 
+ 
 class TestService:
     """Orquesta la ejecución de pruebas"""
     
@@ -22,22 +22,18 @@ class TestService:
         self.on_progress: Callable | None = None
         self.on_log: Callable | None = None
     
-# En test_service.py, modificar para que on_log sea una señal, no una función directa
-
     def set_callbacks(self, on_progress=None, on_log=None, on_error=None):
         """Configura callbacks (que deben ser señales)"""
         self._on_log = on_log
         self._on_progress = on_progress
         self._on_error = on_error
-
+ 
     def _log(self, message: str):
         """Emite mensaje de log (usa la señal)"""
         if self._on_log:
-            # ✅ Usar emit si es una señal, o llamar si es función
             try:
                 self._on_log(message)
             except RuntimeError:
-                # Si el objeto ya fue eliminado, ignorar
                 pass
             
     def _progress(self, current: int, total: int):
@@ -45,10 +41,7 @@ class TestService:
         if self.on_progress:
             self.on_progress(current, total)
     
-    def execute_test(
-        self,
-        button: dict
-    ) -> TestResult:
+    def execute_test(self, button: dict) -> TestResult:
         """Ejecuta una prueba individual"""
         label = button['label']
         action = button['action']
@@ -69,20 +62,17 @@ class TestService:
             elif test_type == 'sequence':
                 result = self._execute_sequence(button, result)
             elif test_type == 'sequence_buttons':
-                result = self._execute_sequence_buttons(
-                    button,
-                    result
-                )
+                result = self._execute_sequence_buttons(button, result)
             else:
                 result.status = "FAIL"
                 result.parsed_data = {'error': f'Tipo desconocido: {test_type}'}
         except Exception as e:
             result.status = "FAIL"
             result.parsed_data = {'error': str(e)}
-            self._log(f"❌ ERROR: {e!s}")
+            self._log(f" ERROR: {e!s}")
         
         result.duration_ms = (time.time() - start_time) * 1000
-        self._log(f"✓ FINALIZADO: {label} - {result.status}")
+        self._log(f" FINALIZADO: {label} - {result.status}")
         
         return result
     
@@ -92,6 +82,7 @@ class TestService:
         cmd = action['cmd']
         target = action.get('target', 1)
         end_marker = action.get('end_marker')
+        label = button['label']
         
         result.command = cmd
         
@@ -103,280 +94,129 @@ class TestService:
             response = adapter.execute_command_until(cmd, end_marker, timeout=120)
         else:
             response = adapter.execute_command(cmd)
-            print(
-                f"[RESPONSE] {button['label']} -> {response[:100]}"
-            )  
-            print(
-                f"[USB3_2 RAW LEN] {len(response)}"
-            )
-
-            with open(
-                "usb32.txt",
-                "w",
-                encoding="utf-8"
-            ) as f:
-                f.write(response)
-            print(
-                response[-3000:]
-            )
+            print(f"[RESPONSE] {label} -> {response[:100]}")
+            
         result.raw_response = response
         
         # Parsear
-        parsed = self.parser.parse(response, button['label'])
-        print(
-            f"[PARSED] {button['label']} -> {parsed}"
-        )
+        parsed = self.parser.parse(response, label)
         result.parsed_data = parsed.__dict__ if parsed else {}
         
         # Verificar
-
         if parsed:
-            verification = self.verifier.verify(button['label'],parsed)
-            print(
-                "[VERIFICATION STATUS]",
-                verification.status
-            )
+            verification = self.verifier.verify(label, parsed)
             result.verification = (verification.__dict__ if verification else {})
-
-            result.status = (
-                verification.status
-                if verification
-                else "UNKNOWN"
-            )
-
+            result.status = (verification.status if verification else "UNKNOWN")
+            
             if hasattr(verification, "metrics"):
                 result.metrics = verification.metrics
-
         else:
-
             config_only_tests = {
-                "DDR Set Test",
-                "SATA Set port 1",
-                "SATA Set Port 2",
-                "USB3->USB2",
-                "USB3_2",
-                "PWM"
+                "DDR Set Test", "SATA Set port 1", "SATA Set Port 2",
+                "USB3->USB2", "USB3_2", "PWM"
             }
-
-            if button["label"] in config_only_tests:
+            if label in config_only_tests:
                 result.status = "PASS"
             else:
                 result.status = "UNKNOWN"
         
         return result
+ 
     
     def _execute_sequence(self, button: dict, result: TestResult) -> TestResult:
         """Ejecuta prueba tipo sequence"""
         action = button['action']
         steps = action.get('steps', [])
-
+ 
         results = []
         current_gpio_pattern = None
         for step in steps:
-
             cmd = step.get('cmd')
             target = step.get('target', 1)
             end_marker = step.get('end_marker')
             delay = step.get('delay', 0)
-
-            adapter = (
-                self.serial_service.cb_adapter
-                if target == 1
-                else self.serial_service.ab_adapter
-            )
-
+ 
+            adapter = (self.serial_service.cb_adapter if target == 1 else self.serial_service.ab_adapter)
+ 
             if end_marker:
-                response = adapter.execute_command_until(
-                    cmd,
-                    end_marker,
-                    timeout=120
-                )
+                response = adapter.execute_command_until(cmd, end_marker, timeout=120)
             else:
                 response = adapter.execute_command(cmd)
-
-            parsed = self.parser.parse(
-                response,
-                button['label']
-            )
-
-            #
+ 
+            parsed = self.parser.parse(response, button['label'])
+ 
             # Detectar marker GPIO
-            #
-            if (
-                parsed
-                and
-                parsed.status == "GPIO"
-            ):
-                bits = parsed.data.get(
-                    "bits",
-                    ""
-                )
-
+            if parsed and parsed.status == "GPIO":
+                bits = parsed.data.get("bits", "")
                 if "GROUP" in bits:
-
                     current_gpio_pattern = bits
-
-            #
+ 
             # Asociar dump GPIO con el último marker
-            #
-            if (
-                parsed
-                and
-                parsed.status == "GPIO"
-                and
-                current_gpio_pattern
-            ):
-
-                parsed.data["pattern"] = (
-                    current_gpio_pattern
-                )
-
-                parsed.metrics["pattern"] = (
-                    current_gpio_pattern
-                )
-
+            if parsed and parsed.status == "GPIO" and current_gpio_pattern:
+                parsed.data["pattern"] = current_gpio_pattern
+                parsed.metrics["pattern"] = current_gpio_pattern
+ 
             verification = None
             if parsed:
-
-                verification = self.verifier.verify(
-                    button["label"],
-                    parsed
-                )
-
+                verification = self.verifier.verify(button["label"], parsed)
+ 
             results.append({
-                "cmd": cmd,
-                "response": response,
-                "parsed": parsed,
-                "verification": verification
+                "cmd": cmd, "response": response,
+                "parsed": parsed, "verification": verification
             })
-
+ 
             if delay > 0:
                 time.sleep(delay)
-
-        result.raw_response = '\n'.join(
-            r['response'] for r in results
-        )
-
+ 
+        result.raw_response = '\n'.join(r['response'] for r in results)
+ 
         serializable_steps = []
-
         for step in results:
-
             parsed = step.get("parsed")
             verification = step.get("verification")
-
             serializable_steps.append({
-
-                "cmd": step.get(
-                    "cmd",
-                    ""
-                ),
-
-                "response": step.get(
-                    "response",
-                    ""
-                ),
-
-                "parsed": (
-                    {
-                        "status": parsed.status,
-                        "raw_value": parsed.raw_value,
-                        "data": parsed.data,
-                        "metrics": parsed.metrics
-                    }
-                    if parsed
-                    else {}
-                ),
-
-                "verification": (
-                    {
-                        "status": verification.status,
-                        "message": verification.message,
-                        "details": verification.details
-                    }
-                    if verification
-                    else {}
-                )
-
+                "cmd": step.get("cmd", ""),
+                "response": step.get("response", ""),
+                "parsed": ({"status": parsed.status, "raw_value": parsed.raw_value, "data": parsed.data, "metrics": parsed.metrics} if parsed else {}),
+                "verification": ({"status": verification.status, "message": verification.message, "details": verification.details} if verification else {})
             })
-
-        result.parsed_data = {
-            "steps": serializable_steps
-        }
+ 
+        result.parsed_data = {"steps": serializable_steps}
+        
         if button["label"] == "ADC":
-
             for step in results:
-
                 parsed = step.get("parsed")
-
                 if parsed:
-
-                    verification = self.verifier.verify(
-                        "ADC",
-                        parsed
-                    )
-
-
-        # Estados válidos para secuencias
+                    verification = self.verifier.verify("ADC", parsed)
+ 
         valid_status = {
-            "PASS",
-            "UART",
-            "I2C",
-            "SPI",
-            "I2S",
-            "GPIO",
-            "ADC",
-            "SMBUS",
-            "MMC",
-            "DDR",
-            "THERMAL",
-            "CURRENT",
-            "CONFIGURATION",
-            "COMMAND ACCEPT",
-            "COMMAND_ACCEPT"
+            "PASS", "UART", "I2C", "SPI", "I2S", "GPIO", "ADC",
+            "SMBUS", "MMC", "DDR", "THERMAL", "CURRENT",
+            "CONFIGURATION", "COMMAND ACCEPT", "COMMAND_ACCEPT"
         }
-
+ 
         sequence_ok = True
-
         for step in results:
-
             response = step.get("response", "")
-
             if response == "NOT CONNECTED":
                 sequence_ok = False
                 break
-
             parsed = step.get("parsed")
-
             if parsed is None:
                 continue
-
-            verification = step.get(
-                "verification"
-            )
-
+            verification = step.get("verification")
             if verification:
-
                 if verification.status != "PASS":
-
                     sequence_ok = False
-
                     break
-        print(
-            f"[SEQUENCE RESULT] {button['label']} -> {sequence_ok}"
-        )
+        
         result.status = "PASS" if sequence_ok else "FAIL"
-
         return result
     
-    def _execute_sequence_buttons(
-        self,
-        button: dict,
-        result: TestResult
-    ) -> TestResult:
+    def _execute_sequence_buttons(self, button: dict, result: TestResult) -> TestResult:
         """Ejecuta secuencia de botones"""
         action = button['action']
         button_names = action.get('buttons', [])
-        
         results = []
         total = len(button_names)
         
@@ -388,36 +228,19 @@ class TestService:
             if not btn:
                 self._log(f"⚠️ Botón no encontrado: {name}")
                 continue
-
-            # Ejecutar recursivamente (pero sin recursión infinita)
-            sub_result = self.execute_test(
-                btn
-            )
-
+ 
+            sub_result = self.execute_test(btn)
             results.append(sub_result)
-
         
         result.parsed_data = {'sub_results': results}
         
-        # Resumen
         passed = sum(1 for r in results if r.status == "PASS")
         failed = len(results) - passed
         
         result.status = "PASS" if failed == 0 else "FAIL"
-        result.metrics.append(TestMetric(
-            name="total_tests",
-            value=len(results),
-            unit="count"
-        ))
-        result.metrics.append(TestMetric(
-            name="passed",
-            value=passed,
-            unit="count"
-        ))
-        result.metrics.append(TestMetric(
-            name="failed",
-            value=failed,
-            unit="count"
-        ))
+        result.metrics.append(TestMetric(name="total_tests", value=len(results), unit="count"))
+        result.metrics.append(TestMetric(name="passed", value=passed, unit="count"))
+        result.metrics.append(TestMetric(name="failed", value=failed, unit="count"))
         
         return result
+ 

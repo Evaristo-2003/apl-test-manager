@@ -43,7 +43,20 @@ class VerificationService:
                 status="UNKNOWN",
                 message="No hay datos para verificar"
             )
-
+        # ----- NUMBER OF PORT -----
+        if "number of port" in test_name.lower():
+            if parsed.status == "FAIL":
+                lost_ports = parsed.metrics.get("lost_ports", 0)
+                return VerificationResult(
+                    status="FAIL",
+                    message=f"Falla de puertos: {lost_ports} puertos perdidos.",
+                    details={'lost_ports': lost_ports}
+                )
+            return VerificationResult(
+                status="PASS",
+                message="Todos los puertos detectados correctamente."
+            )
+        
         if parsed.status in ["COMMAND ACCEPT", "COMMAND_ACCEPT", "CONFIGURATION"]:
             return VerificationResult(
                 status="PASS",
@@ -637,6 +650,7 @@ class VerificationService:
                 details={"steps": len(steps)}
             )
 
+ 
         # ----- AB CPU TEMP -----
         if "AB CPU TEMP" in test_name or "AB CPU Temp" in test_name:
             temp = float(parsed.data.get("value", 0))

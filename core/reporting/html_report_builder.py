@@ -680,7 +680,7 @@ h1 {{
             if verification:
                 has_ports_renderer = ("ports" in details)
 
-                # CAMBIO: mostrar verificación para iperf/CSI/config FAIL
+                # Mostrar verificación para iperf/CSI/config FAIL
                 should_show = (
                     not is_number_of_port_test
                     and (
@@ -703,7 +703,6 @@ Verification
 <table class="detail-table">
 """
 
-                    # CAMBIO: mostrar message también en iperf FAIL
                     if show_message or (is_iperf_test and status == "FAIL") or (is_configuration_test and status == "FAIL"):
                         html += f"""
 <tr>
@@ -906,9 +905,79 @@ Measured Data
 </tr>
 """
 
-            # Test Results / Data
+            # ============================================================
+            # NUEVO: NUMBER OF PORT (Detalle de Puertos Perdidos)
+            # ============================================================
             show_test_results = True
 
+            if is_number_of_port_test:
+                if status == "FAIL":
+                    lost_ports = details.get("lost_ports", 0)
+                    message = verification.get("message", "")
+
+                    # Extraer el motivo del raw_value si existe
+                    reason = ""
+                    raw = parsed_data.get("raw_value", "") if isinstance(parsed_data, dict) else ""
+                    if "Ax88179 is not USB" in raw:
+                        reason = "Error del Bridge: Ax88179 is not USB3.0 mode or USB bus can't find the Ax88179 bridges"
+                    elif "Lost" in raw:
+                        match = re.search(r"(.*Lost.*ports?.*)", raw)
+                        if match:
+                            reason = match.group(1).strip()
+
+                    html += f"""
+<div class="section-title">
+Port Verification Failure
+</div>
+
+<table class="detail-table">
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+<tr>
+<td class="detail-label">Message</td>
+<td class="fail">{message}</td>
+</tr>
+<tr>
+<td class="detail-label">Lost Ports</td>
+<td class="fail"><b>{lost_ports}</b></td>
+</tr>
+"""
+                    if reason:
+                        html += f"""
+<tr>
+<td class="detail-label">Reason</td>
+<td>{reason}</td>
+</tr>
+"""
+                    html += """
+</table>
+<br>
+"""
+                else:
+                    # PASS: Mensaje simple de éxito
+                    html += f"""
+<div class="section-title">
+Port Verification
+</div>
+
+<table class="detail-table">
+<tr>
+<td class="detail-label">Status</td>
+<td class="pass"><b>PASS</b></td>
+</tr>
+<tr>
+<td class="detail-label">Message</td>
+<td>{verification.get("message", "")}</td>
+</tr>
+</table>
+<br>
+"""
+                # Ocultar la tabla genérica para este test
+                show_test_results = False
+
+            # Test Results / Data (Genérico)
             if isinstance(parsed_data, dict):
                 details = verification.get("details", {})
 

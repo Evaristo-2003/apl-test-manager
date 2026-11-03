@@ -10,7 +10,7 @@ from typing import Any
 @dataclass
 class ParsedResult:
     """Resultado parseado de una prueba"""
-    status: str  # PASS, FAIL, INFO, ERROR, etc.
+    status: str
     raw_value: str = ""
     data: dict[str, Any] = field(default_factory=dict)
     metrics: dict[str, Any] = field(default_factory=dict)
@@ -31,378 +31,236 @@ class ParserService:
     RESULT_PATTERN = re.compile(r"\*(.*?)&")
     
     def parse(self, text: str, test_name: str) -> ParsedResult | None:
-        """
-        Parsea el resultado de una prueba
-        
-        Args:
-            text: Texto de respuesta del dispositivo
-            test_name: Nombre de la prueba
-        
-        Returns:
-            ParsedResult o None si no se pudo parsear
-        """
-        # Buscar patrón principal (*...&)
+        """Parsea el resultado de una prueba"""
         result_match = self.RESULT_PATTERN.search(text)
         raw_value = result_match.group(1) if result_match else text[:200]
         
         # ============================================================
-        # PARSEAR SEGÚN TIPO DE PRUEBA 
+        # VERSIONES
         # ============================================================
-        
-        # ----- CBSW Version -----
         if "CBSW Version" in test_name:
             match = re.search(r"v\d+\.\d+\.\d+\.\d+\s+\d+", text)
             if match:
-                return ParsedResult(
-                    status="CBSW",
-                    raw_value=raw_value,
-                    data={'version': match.group(0)},
-                    metrics={'version': match.group(0)}
-                )
+                return ParsedResult(status="CBSW", raw_value=raw_value, data={'version': match.group(0)}, metrics={'version': match.group(0)})
         
-        # ----- ABHW Version -----
         if "ABHW Version" in test_name:
             match = re.search(r"ab ver:([A-Z])", text, re.IGNORECASE)
             if match:
-                return ParsedResult(
-                    status="ABHW",
-                    raw_value=raw_value,
-                    data={'version': match.group(1)},
-                    metrics={'version': match.group(1)}
-                )
+                return ParsedResult(status="ABHW", raw_value=raw_value, data={'version': match.group(1)}, metrics={'version': match.group(1)})
         
-        # ----- CBHW Version -----
         if "CBHW Version" in test_name:
             match = re.search(r"cb ver:([A-Z])", text, re.IGNORECASE)
             if match:
-                return ParsedResult(
-                    status="CBHW",
-                    raw_value=raw_value,
-                    data={'version': match.group(1)},
-                    metrics={'version': match.group(1)}
-                )
+                return ParsedResult(status="CBHW", raw_value=raw_value, data={'version': match.group(1)}, metrics={'version': match.group(1)})
         
-        # ----- ADC -----
+        # ============================================================
+        # ADC
+        # ============================================================
         if "ADC" in test_name:
             return self._parse_adc(text)
         
-        # ----- USB3 -----
-
-        if "USB3" in test_name:
-
+        # ============================================================
+        # USB / PCIe IPERF
+        # ============================================================
+        if "USB3" in test_name and "number of port" not in test_name:
             parsed = self._parse_pcie(text)
-
             if parsed:
-
-                return ParsedResult(
-                    status="USB3",
-                    raw_value=raw_value,
-                    data={
-                        'ports': parsed['ports']
-                    },
-                    metrics={
-                        'ports': len(
-                            parsed['ports']
-                        )
-                    }
-                )
+                return ParsedResult(status="USB3", raw_value=raw_value, data={'ports': parsed['ports']}, metrics={'ports': len(parsed['ports'])})
         
-        # ----- USB2 Iperf Test -----
         if "USB2 Iperf Test" in test_name:
             parsed = self._parse_pcie(text)
             if parsed:
-                return ParsedResult(
-                    status="USB2",
-                    raw_value=raw_value,
-                    data={'ports': parsed['ports']},
-                    metrics={'ports': len(parsed['ports'])}
-                )
+                return ParsedResult(status="USB2", raw_value=raw_value, data={'ports': parsed['ports']}, metrics={'ports': len(parsed['ports'])})
         
-        # ----- PCIe Iperf Test -----
         if "PCIe Iperf Test" in test_name:
             parsed = self._parse_pcie(text)
             if parsed:
-                return ParsedResult(
-                    status="PCIE",
-                    raw_value=raw_value,
-                    data={'ports': parsed['ports']},
-                    metrics={'ports': len(parsed['ports'])}
-                )
+                return ParsedResult(status="PCIE", raw_value=raw_value, data={'ports': parsed['ports']}, metrics={'ports': len(parsed['ports'])})
         
-        # ----- USB number of port / PCIe number of port -----
+        # ============================================================
+        #  NUMBER OF PORT
+        # ============================================================
         if test_name in [
             "USB3_3 number of port",
             "USB2 number of port",
             "PCIe number of port",
             "USB3_2 number of port"
         ]:
+            # 1. Contamos la evidencia real de los puertos
+            # Buscamos los registros exitosos en la sección [Register status]
+            # o en el volcado de lsusb.
+            
+            registered_ports = 0
+            
+            if "PCIe" in test_name:
+                # Para PCIe contamos las interfaces "Finally Ethernet interface name"
+                registered_ports = text.count("Finally Ethernet interface name")
+            elif "USB3" in test_name:
+                # Para USB3 contamos los registros de ax88179_178a
+                registered_ports = text.count("register 'ax88179_178a'")
+            elif "USB2" in test_name:
+                # Para USB2 contamos los registros de smsc95xx
+                registered_ports = text.count("register 'smsc95xx'")
+ 
+            # 2. Regla de oro: Si hay 4 o más registros reales, es un PASS
+            # (Ignoramos el "Lost" porque el hardware está ahí)
+            if registered_ports >= 4:
+                return ParsedResult(
+                    status="COMMAND ACCEPT",
+                    raw_value=raw_value,
+                    data={'message': f'{registered_ports} puertos detectados y registrados correctamente'}
+                )
+ 
+            # 3. Si NO hay 4 registros, entonces SÍ es un fallo real.
+            # Intentamos leer cuántos puertos perdidos reporta el script.
+            lost_match = re.search(r"Lost\s+(\d+)\s+ports?", text, re.IGNORECASE)
+            lost_count = int(lost_match.group(1)) if lost_match else (4 - registered_ports)
+            
             return ParsedResult(
-                status="COMMAND ACCEPT",
+                status="FAIL",
                 raw_value=raw_value,
-                data={'message': 'COMMAND ACCEPT'}
+                data={'message': f'{lost_count} puertos perdidos', 'lost_ports': lost_count},
+                metrics={'lost_ports': lost_count}
             )
-        # ----- USB3 <-> USB2 SWITCH -----
-        if test_name in [
-            "USB3 to USB2",
-            "USB2 to USB3"
-        ]:
-
-            return ParsedResult(
-                status="CONFIGURATION",
-                raw_value=raw_value,
-                data={
-                    "message": "CONFIGURATION"
-                }
-    )
-        # ----- UART -----
+ 
+        # ============================================================
+        # USB3 <-> USB2 SWITCH
+        # ============================================================
+        if test_name in ["USB3 to USB2", "USB2 to USB3"]:
+            return ParsedResult(status="CONFIGURATION", raw_value=raw_value, data={"message": "CONFIGURATION"})
+        
+        # ============================================================
+        # UART
+        # ============================================================
         if "UART" in test_name:
             uart_result = self._parse_uart(text)
             if uart_result:
                 return uart_result
         
-        # ----- DDR -----
+        # ============================================================
+        # DDR / THERMAL / CURRENT / SMBUS / KERNEL / CPU INFO
+        # ============================================================
         if "DDR" in test_name:
             match = self.RESULT_PATTERN.search(text)
             if match:
                 values = match.group(1).strip().split("|")
                 if len(values) == 2:
-                    return ParsedResult(
-                        status="DDR",
-                        raw_value=raw_value,
-                        data={'score': values[0], 'result': values[1]},
-                        metrics={'score': values[0]}
-                    )
+                    return ParsedResult(status="DDR", raw_value=raw_value, data={'score': values[0], 'result': values[1]}, metrics={'score': values[0]})
         
-        # ----- THERMAL -----
         if "Thermal" in test_name:
             match = self.RESULT_PATTERN.search(text)
             if match:
                 values = match.group(1).strip().split("|")
                 if len(values) == 2:
-                    return ParsedResult(
-                        status="THERMAL",
-                        raw_value=raw_value,
-                        data={'temperature': values[0], 'humidity': values[1]},
-                        metrics={'temp_c': float(values[0]), 'humidity_pct': float(values[1])}
-                    )
+                    return ParsedResult(status="THERMAL", raw_value=raw_value, data={'temperature': values[0], 'humidity': values[1]}, metrics={'temp_c': float(values[0]), 'humidity_pct': float(values[1])})
         
-        # ----- CURRENT SENSOR -----
         if "cursens" in test_name:
             match = self.RESULT_PATTERN.search(text)
             if match:
                 values = match.group(1).strip().split("|")
                 if len(values) == 2:
-                    return ParsedResult(
-                        status="CURRENT",
-                        raw_value=raw_value,
-                        data={'current': values[0], 'voltage': values[1]},
-                        metrics={'current_a': float(values[0]), 'voltage_v': float(values[1])}
-                    )
+                    return ParsedResult(status="CURRENT", raw_value=raw_value, data={'current': values[0], 'voltage': values[1]}, metrics={'current_a': float(values[0]), 'voltage_v': float(values[1])})
         
-        # ----- SMBus -----
         if "SMBus" in test_name:
             match = self.RESULT_PATTERN.search(text)
             if match:
                 values = match.group(1).strip().split("|")
                 if len(values) == 3:
-                    return ParsedResult(
-                        status="SMBUS",
-                        raw_value=raw_value,
-                        data={'result': values[0], 'temp_c': values[1], 'temp_f': values[2]},
-                        metrics={'temp_c': float(values[1]), 'temp_f': float(values[2])}
-                    )
+                    return ParsedResult(status="SMBUS", raw_value=raw_value, data={'result': values[0], 'temp_c': values[1], 'temp_f': values[2]}, metrics={'temp_c': float(values[1]), 'temp_f': float(values[2])})
         
-        # ----- KERNEL VERSION -----
         if "Kernel Version" in test_name:
             match = self.RESULT_PATTERN.search(text)
             if match:
                 values = match.group(1).strip().split("|")
                 if len(values) == 2:
-                    return ParsedResult(
-                        status="KERNEL",
-                        raw_value=raw_value,
-                        data={'version': values[0], 'build_date': values[1]},
-                        metrics={'version': values[0]}
-                    )
-        # ----- CPU INFO -----
+                    return ParsedResult(status="KERNEL", raw_value=raw_value, data={'version': values[0], 'build_date': values[1]}, metrics={'version': values[0]})
+        
         if "CPU info" in test_name:
-
             values = raw_value.split("|")
-
             if len(values) >= 13:
-
-                return ParsedResult(
-                    status="CPUINFO",
-                    raw_value=raw_value,
-                    data={
-                        "vendor_id": values[0],
-                        "cpu_family": values[1],
-                        "model": values[2],
-                        "model_name": values[3],
-                        "cpu_cores": values[4],
-                        "cpu_mhz": values[5],
-                        "cpu_max_mhz": values[6],
-                        "cpu_min_mhz": values[7],
-                        "bogomips": values[8],
-                        "virtualization": values[9],
-                        "l1d_cache": values[10],
-                        "l1i_cache": values[11],
-                        "l2_cache": values[12]
-                    }
-                )       
-        # ----- EMMC/SDIO -----
+                return ParsedResult(status="CPUINFO", raw_value=raw_value, data={
+                    "vendor_id": values[0], "cpu_family": values[1], "model": values[2],
+                    "model_name": values[3], "cpu_cores": values[4], "cpu_mhz": values[5],
+                    "cpu_max_mhz": values[6], "cpu_min_mhz": values[7], "bogomips": values[8],
+                    "virtualization": values[9], "l1d_cache": values[10], "l1i_cache": values[11], "l2_cache": values[12]
+                })
+        
+        # ============================================================
+        # EMMC / SDIO
+        # ============================================================
         if test_name in ["EMMC-8bit", "EMMC-4bit", "SDIO"]:
             match = self.RESULT_PATTERN.search(text)
             if match:
                 values = match.group(1).strip().split("|")
                 if len(values) == 4:
-                    return ParsedResult(
-                        status="MMC",
-                        raw_value=raw_value,
-                        data={
-                            'result': values[0],
-                            'bus_width': values[1],
-                            'clock': values[2],
-                            'timing': values[3]
-                        },
-                        metrics={
-                            'bus_width': values[1],
-                            'clock': values[2],
-                            'timing': values[3]
-                        }
-                    )
+                    return ParsedResult(status="MMC", raw_value=raw_value, data={
+                        'result': values[0], 'bus_width': values[1], 'clock': values[2], 'timing': values[3]
+                    }, metrics={'bus_width': values[1], 'clock': values[2], 'timing': values[3]})
         
-        # ----- I2C -----
+        # ============================================================
+        # I2C / SPI / I2S
+        # ============================================================
         if "I2C" in test_name:
-
             match = self.RESULT_PATTERN.search(text)
-
             if match:
-
                 values = match.group(1).strip().split("|")
-
                 if len(values) == 2:
-
-                    sensor_match = re.search(
-                        r"I2C_Temperature_(\d+)",
-                        text,
-                        re.IGNORECASE
-                    )
-
-                    sensor = (
-                        int(sensor_match.group(1))
-                        if sensor_match
-                        else -1
-                    )
-
-                    return ParsedResult(
-                        status="I2C",
-                        raw_value=raw_value,
-                        data={
-                            "sensor": sensor,
-                            "temp_c": values[0],
-                            "temp_f": values[1]
-                        },
-                        metrics={
-                            "sensor": sensor,
-                            "temp_c": float(values[0]),
-                            "temp_f": float(values[1])
-                        }
-                    )
-        # ----- SPI -----
+                    sensor_match = re.search(r"I2C_Temperature_(\d+)", text, re.IGNORECASE)
+                    sensor = int(sensor_match.group(1)) if sensor_match else -1
+                    return ParsedResult(status="I2C", raw_value=raw_value, data={"sensor": sensor, "temp_c": values[0], "temp_f": values[1]}, metrics={"sensor": sensor, "temp_c": float(values[0]), "temp_f": float(values[1])})
+        
         if "SPI" in test_name:
             match = self.RESULT_PATTERN.search(text)
             if match:
                 values = match.group(1).strip().split("|", 1)
                 if len(values) == 2:
-                    return ParsedResult(
-                        status="SPI",
-                        raw_value=raw_value,
-                        data={'result': values[0], 'device_id': values[1]},
-                        metrics={'result': values[0]}
-                    )
+                    return ParsedResult(status="SPI", raw_value=raw_value, data={'result': values[0], 'device_id': values[1]}, metrics={'result': values[0]})
         
-        # ----- I2S -----
         if "I2S" in test_name:
             match = self.RESULT_PATTERN.search(text)
             if match:
                 values = match.group(1).strip().split("|")
                 if len(values) == 2:
-                    return ParsedResult(
-                        status="I2S",
-                        raw_value=raw_value,
-                        data={'result': values[0], 'score': values[1]},
-                        metrics={'score': values[1]}
-                    )
+                    return ParsedResult(status="I2S", raw_value=raw_value, data={'result': values[0], 'score': values[1]}, metrics={'score': values[1]})
         
-        # ----- PWM -----
+        # ============================================================
+        # PWM / MRC / HDMI / GPIO
+        # ============================================================
         if test_name == "PWM":
-            return ParsedResult(
-                status="CONFIGURATION",
-                raw_value=raw_value,
-                data={'message': 'CONFIGURATION'}
-            )
+            return ParsedResult(status="CONFIGURATION", raw_value=raw_value, data={'message': 'CONFIGURATION'})
         
-        # ----- AB Mrcthreshold -----
         if "AB Mrcthreshold" in test_name:
             match = self.RESULT_PATTERN.search(text)
             if match:
-                return ParsedResult(
-                    status="MRCTHRESHOLD",
-                    raw_value=raw_value,
-                    data={'value': match.group(1).strip()}
-                )
+                return ParsedResult(status="MRCTHRESHOLD", raw_value=raw_value, data={'value': match.group(1).strip()})
         
-        # ----- HDMI -----
         if test_name == "HDMI":
-            return ParsedResult(
-                status="COMMAND_ACCEPT",
-                raw_value=raw_value,
-                data={'message': 'COMMAND_ACCEPT'}
-            )
+            return ParsedResult(status="COMMAND_ACCEPT", raw_value=raw_value, data={'message': 'COMMAND_ACCEPT'})
         
-        # ----- GPIO -----
         if "GPIO" in test_name:
             return self._parse_gpio(text)
         
         # ============================================================
-        # PARSEO GENÉRICO (PASS/FAIL)
+        # PARSEO GENÉRICO
         # ============================================================
-        
-        # Buscar PASS/FAIL en el patrón
         if result_match:
             value = result_match.group(1).strip()
-            
             if value == "PASS":
                 return ParsedResult(status="PASS", raw_value=raw_value)
-            
             if value == "NG":
                 return ParsedResult(status="FAIL", raw_value=raw_value)
-            
-            # Si no es PASS/FAIL pero tiene valor, devolver INFO
-            return ParsedResult(
-                status="INFO",
-                raw_value=raw_value,
-                data={'value': value}
-            )
+            return ParsedResult(status="INFO", raw_value=raw_value, data={'value': value})
         
-        # Si no hay patrón *...&, intentar detectar PASS/FAIL en el texto
         if "*PASS&" in text:
             return ParsedResult(status="PASS", raw_value=raw_value)
         if "*NG&" in text:
             return ParsedResult(status="FAIL", raw_value=raw_value)
         if "ERASE DID/PDR SUCCESS" in text:
-            return ParsedResult(
-                status="PASS",
-                raw_value=raw_value,
-                data={'message': 'ERASE DID/PDR SUCCESS'}
-            )
+            return ParsedResult(status="PASS", raw_value=raw_value, data={'message': 'ERASE DID/PDR SUCCESS'})
         
-        # Si no se pudo parsear nada
         return None
     
     def _parse_adc(self, text: str) -> ParsedResult | None:
-        """Parsea ADC"""
         channels = []
         for line in text.splitlines():
             line = line.strip()
@@ -416,16 +274,10 @@ class ParserService:
                     channels.append(line)
         
         if channels:
-            return ParsedResult(
-                status="ADC",
-                raw_value="|".join(channels),
-                data={'channels': channels},
-                metrics={'channels': len(channels)}
-            )
+            return ParsedResult(status="ADC", raw_value="|".join(channels), data={'channels': channels}, metrics={'channels': len(channels)})
         return None
     
     def _parse_pcie(self, text: str) -> dict | None:
-        """Parsea PCIe/USB"""
         lines = []
         for line in text.splitlines():
             if "|PINGOK|" in line or "|PINGNG|" in line:
@@ -444,46 +296,23 @@ class ParserService:
             ping = fields[i].strip()
             tx = fields[i + 1].strip()
             rx = fields[i + 2].strip()
-            
             if ping in ["PINGOK", "PINGNG"]:
-                ports.append({
-                    "port": idx,
-                    "ping": ping,
-                    "tx": tx,
-                    "rx": rx
-                })
+                ports.append({"port": idx, "ping": ping, "tx": tx, "rx": rx})
                 idx += 1
-            
             i += 3
         
         return {"ports": ports} if ports else None
     
     def _parse_uart(self, text: str) -> ParsedResult | None:
-        """Parsea UART"""
         if "are identical" not in text:
             return None
-        
         match = re.search(r"UART_rx_(\d+)", text)
         port = match.group(1) if match else "?"
-        
-        return ParsedResult(
-            status="UART",
-            raw_value=text[:200],
-            data={'port': port, 'result': 'PASS'},
-            metrics={'port': port}
-        )
+        return ParsedResult(status="UART", raw_value=text[:200], data={'port': port, 'result': 'PASS'}, metrics={'port': port})
     
     def _parse_gpio(self, text: str) -> ParsedResult | None:
-        """Parsea GPIO"""
         match = self.RESULT_PATTERN.search(text)
         if not match:
             return None
-        
         bits = match.group(1).replace("|", "")
-        
-        return ParsedResult(
-            status="GPIO",
-            raw_value=bits,
-            data={'bits': bits},
-            metrics={'bits': bits}
-        )
+        return ParsedResult(status="GPIO", raw_value=bits, data={'bits': bits}, metrics={'bits': bits})
