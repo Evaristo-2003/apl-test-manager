@@ -3,6 +3,7 @@
 """Vista de Analysis - Captura continua de logs AB/CB"""
 
 import os
+import re
 import time
 import threading
 from datetime import datetime
@@ -540,26 +541,65 @@ class AnalysisView(QWidget):
 
     def _check_ab_log_realtime(self):
         """Revisa el log. Si no hay falla clara, pregunta por los LEDs."""
-
-        ab_log = self.ab_console.toPlainText()
+ 
+        # Usar el buffer completo en lugar del texto visible
+        ab_log = "".join(self.ab_log_buffer)
+        if not ab_log:
+            ab_log = self.ab_console.toPlainText()
+ 
         tiempo_transcurrido = time.time() - self._diag_start_time
-
-        palabras_criticas = ["MRC", "ACPI MEMORY", "Kernel panic", "root@harman-si-intel-plk", "EXCEPTION"]
-        ha_terminado_o_fallado = any(palabra in ab_log for palabra in palabras_criticas)
-
-        # 2. Si terminó o pasaron más de 15 segundos (timeout)
-        if ha_terminado_o_fallado or tiempo_transcurrido > 15:
-
+ 
+        # ============================================================
+        # 1. Detección temprana del prompt de Linux -> PASS
+        # ============================================================
+        prompt_patterns = [
+            r"root@harman-si-intel-plk",
+            r"root@.*:~#",
+            r"login:",
+            r"init_connection",          # NUEVO: El sistema ya está en el prompt
+            r"No route to host",          # NUEVO: El sistema ya está en el prompt
+            r"Re-init conn",              # NUEVO: El sistema ya está en el prompt
+        ]
+        for pattern in prompt_patterns:
+            if re.search(pattern, ab_log, re.IGNORECASE):
+                self._diag_timer.stop()
+                self._show_diagnostic_result({
+                    "mode": "Falla FALSA",
+                    "status": "PASS",
+                    "diagnosis": "Arranque de la AB exitoso. Sistema de memoria y alimentación OK.",
+                    "action": "Ninguna."
+                })
+                return
+ 
+        # ============================================================
+        # 2. Detección de fallas FATALES (irreversibles) -> Detener inmediatamente
+        # ============================================================
+        fallas_fatales = [
+            r"EXCEPTION\s*#\d+",
+            r"KERNEL PANIC",
+            r"ACPI MEMORY OR I/O RESET_REG",
+            r"MACHINE CHECK EXCEPTION",
+            r"NO MEMORY DETECTED",
+        ]
+        for pattern in fallas_fatales:
+            if re.search(pattern, ab_log, re.IGNORECASE):
+                self._diag_timer.stop()
+                result = DiagnosticEngine.analyze_ab_log_only(ab_log)
+                self._show_diagnostic_result(result)
+                return
+ 
+        # ============================================================
+        # 3. Si pasaron 35 segundos sin prompt ni falla fatal,
+        #    analizamos el log (puede ser un caso ambiguo).
+        #    Aumentamos a 35s porque el arranque de Linux puede tardar.
+        # ============================================================
+        if tiempo_transcurrido > 35:
             self._diag_timer.stop()
-
-            # =========================================================
-            #  SI NO HAY LOG O ES MUY CORTO, SALTAMOS AL FILTRO DE LEDS
-            # =========================================================
+ 
             if not ab_log.strip() or len(ab_log) < 50:
-                self.cb_console.append("\n[DIAGNOSTIC] ⚠️ No se recibió log de la AB en 15s.")
+                self.cb_console.append("\n[DIAGNOSTIC]  No se recibió log de la AB en 35s.")
                 self.cb_console.append("[DIAGNOSTIC] Solicitando estado de LEDs para diagnóstico...")
-
-                # Lanzamos el diálogo de LEDs
+ 
                 dialog = LedSelectorDialog(self)
                 if dialog.exec():
                     led_d62, led_d65 = dialog.get_selection()
@@ -568,20 +608,13 @@ class AnalysisView(QWidget):
                 else:
                     self.cb_console.append("\n[DIAGNOSTIC] Diagnóstico cancelado por el operador.")
                 return
-
-            # =========================================================
-            #  FILTRO 1: Analizar SOLO el log (Si sí hubo log)
-            # =========================================================
+ 
             result = DiagnosticEngine.analyze_ab_log_only(ab_log)
-
-            # Si el log fue concluyente, no preguntamos por LEDs
+ 
             if result["status"] != "UNKNOWN":
                 self._show_diagnostic_result(result)
                 return
-
-            # =========================================================
-            #  FILTRO 2: Si el log no dijo nada, preguntamos por LEDs
-            # =========================================================
+ 
             self.cb_console.append("[DIAGNOSTIC] Log no concluyente. Solicitando estado de LEDs...")
             dialog = LedSelectorDialog(self)
             if dialog.exec():
@@ -590,6 +623,8 @@ class AnalysisView(QWidget):
                 self._show_diagnostic_result(result)
             else:
                 self.cb_console.append("\n[DIAGNOSTIC] Diagnóstico cancelado por el operador.")
+ 
+ 
 
     def _show_diagnostic_result(self, result):
         """Muestra el resultado final en la consola y en una ventana emergente simplificada."""

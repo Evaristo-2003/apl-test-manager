@@ -1,16 +1,19 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_all
+
+datas = [('buttons.json', '.'), ('limits.json', '.'), ('projects.json', '.'), ('assets', 'assets')]
+binaries = []
+hiddenimports = []
+tmp_ret = collect_all('PySide6')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+
 
 a = Analysis(
     ['app.py'],
     pathex=[],
-    binaries=[],
-    datas=[
-        ('assets', 'assets'),
-        ('buttons.json', '.'),
-        ('limits.json', '.'),
-        ('projects.json', '.'),
-    ],
-    hiddenimports=[],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -18,10 +21,7 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-
-pyz = PYZ(
-    a.pure
-)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
@@ -39,9 +39,8 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='assets/icon.ico',
+    icon=['assets/icon.ico'],
 )
-
 coll = COLLECT(
     exe,
     a.binaries,
